@@ -9,6 +9,7 @@ using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EntityFramework.Utilities
 {
@@ -115,17 +116,18 @@ namespace EntityFramework.Utilities
 				var typeMapping = mapping.TypeMappings[typeof(T)];
 				var tableMapping = typeMapping.TableMappings.First();
 
-				var properties = tableMapping.PropertyMappings
-					.Where(p => currentType.IsSubclassOf(p.ForEntityType) || p.ForEntityType == currentType)
-					.Select(p => new ColumnMapping { NameInDatabase = p.ColumnName, NameOnObject = p.PropertyName }).ToList();
-				if (tableMapping.TPHConfiguration != null)
-				{
-					properties.Add(new ColumnMapping
-					{
-						NameInDatabase = tableMapping.TPHConfiguration.ColumnName,
-						StaticValue = tableMapping.TPHConfiguration.Mappings[typeof(TEntity)]
-					});
-				}
+                var properties = tableMapping.PropertyMappings
+                    .Where(p => currentType.IsSubclassOf(p.ForEntityType) || p.ForEntityType == currentType)
+                    .Where(p => p.IsComputed == false)
+                    .Select(p => new ColumnMapping { NameInDatabase = p.ColumnName, NameOnObject = p.PropertyName }).ToList();
+                if (tableMapping.TPHConfiguration != null)
+                {
+                    properties.Add(new ColumnMapping
+                    {
+                        NameInDatabase = tableMapping.TPHConfiguration.ColumnName,
+                        StaticValue = tableMapping.TPHConfiguration.Mappings[typeof(TEntity)]
+                    });
+                }
 
 				provider.InsertItems(items, tableMapping.Schema, tableMapping.TableName, properties, connectionToUse, batchSize, executeTimeout, copyOptions, transaction);
 			}
@@ -156,14 +158,15 @@ namespace EntityFramework.Utilities
 				var typeMapping = mapping.TypeMappings[typeof(T)];
 				var tableMapping = typeMapping.TableMappings.First();
 
-				var properties = tableMapping.PropertyMappings
-					.Where(p => currentType.IsSubclassOf(p.ForEntityType) || p.ForEntityType == currentType)
-					.Select(p => new ColumnMapping {
-						NameInDatabase = p.ColumnName,
-						NameOnObject = p.PropertyName,
-						DataType = p.DataTypeFull,
-						IsPrimaryKey = p.IsPrimaryKey
-					}).ToList();
+                var properties = tableMapping.PropertyMappings
+                    .Where(p => currentType.IsSubclassOf(p.ForEntityType) || p.ForEntityType == currentType)
+                    .Where(p => p.IsComputed == false)
+                    .Select(p => new ColumnMapping { 
+                        NameInDatabase = p.ColumnName, 
+                        NameOnObject = p.PropertyName, 
+                        DataType = p.DataTypeFull,
+                        IsPrimaryKey = p.IsPrimaryKey
+                     }).ToList();
 
 				var spec = new UpdateSpecification<TEntity>();
 				updateSpecification(spec);
