@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace EntityFramework.Utilities
@@ -40,7 +39,7 @@ namespace EntityFramework.Utilities
 			}
 			else
 			{
-				updateSql = string.Join(" = ", update.Split(new string[]{" = "}, StringSplitOptions.RemoveEmptyEntries).Reverse());
+				updateSql = string.Join(" = ", update.Split(new string[] { " = " }, StringSplitOptions.RemoveEmptyEntries).Reverse());
 			}
 
 
@@ -100,10 +99,10 @@ namespace EntityFramework.Utilities
 				con.Open();
 			}
 
-            var setters = string.Join(",", filtered.Where(c => !c.IsPrimaryKey).Select(c => "[" + c.NameInDatabase + "] = TEMP.[" + c.NameInDatabase + "]"));
-            var pks = properties.Where(p => p.IsPrimaryKey).Select(x => "ORIG.[" + x.NameInDatabase + "] = TEMP.[" + x.NameInDatabase + "]");
-            var filter = string.Join(" and ",  pks);
-            var mergeCommand =  string.Format(@"UPDATE [{0}].[{1}]
+			var setters = string.Join(",", filtered.Where(c => !c.IsPrimaryKey).Select(c => "[" + c.NameInDatabase + "] = TEMP.[" + c.NameInDatabase + "]"));
+			var pks = properties.Where(p => p.IsPrimaryKey).Select(x => "ORIG.[" + x.NameInDatabase + "] = TEMP.[" + x.NameInDatabase + "]");
+			var filter = string.Join(" and ",  pks);
+			var mergeCommand =  string.Format(@"UPDATE [{0}].[{1}]
                 SET
                     {4}
                 FROM
