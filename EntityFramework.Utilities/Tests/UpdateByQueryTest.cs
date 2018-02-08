@@ -3,23 +3,21 @@ using System.Linq;
 using EntityFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Tests.FakeDomain;
-using Tests.FakeDomain.Models;
+using Tests.Models;
 
 namespace Tests
 {
 	[TestClass]
 	public class UpdateByQueryTest
 	{
-
 		[TestMethod]
 		public void UpdateAll_Increment()
 		{
 			SetupBasePosts();
 
-			int count;
 			using (var db = Context.Sql())
 			{
-				count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Reads, b => b.Reads + 5);
+				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Reads, b => b.Reads + 5);
 				Assert.AreEqual(1, count);
 			}
 
@@ -35,10 +33,9 @@ namespace Tests
 		{
 			SetupBasePosts();
 
-			int count;
 			using (var db = Context.Sql())
 			{
-				count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Reads, b => 10);
+				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Reads, b => 10);
 				Assert.AreEqual(1, count);
 			}
 
@@ -54,11 +51,10 @@ namespace Tests
 		{
 			SetupBasePosts();
 
-			int count;
 			using (var db = Context.Sql())
 			{
-				int reads = 20;
-				count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Reads, b => reads);
+				var reads = 20;
+				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Reads, b => reads);
 				Assert.AreEqual(1, count);
 			}
 
@@ -68,20 +64,20 @@ namespace Tests
 				Assert.AreEqual(20, post.Reads);
 			}
 		}
-		private int Get20()
+		private static int Get20()
 		{
 			return 20;
 		}
+
 		[TestMethod]
 		[Ignore]
 		public void UpdateAll_SetFromMethod()
 		{
 			SetupBasePosts();
 
-			int count;
 			using (var db = Context.Sql())
 			{
-				count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Reads, b => Get20());
+				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Reads, b => Get20());
 				Assert.AreEqual(1, count);
 			}
 
@@ -98,10 +94,9 @@ namespace Tests
 		{
 			SetupBasePosts();
 
-			int count;
 			using (var db = Context.Sql())
 			{
-				count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Created == DateTime.Now.AddDays(2)).Update(b => b.Created, b => DateTime.Now);
+				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Created == DateTime.Now.AddDays(2)).Update(b => b.Created, b => DateTime.Now);
 				Assert.AreEqual(1, count);
 			}
 		}
@@ -112,10 +107,9 @@ namespace Tests
 		{
 			SetupBasePosts();
 
-			int count;
 			using (var db = Context.Sql())
 			{
-				count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Title, b => b.Title + ".0");
+				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Title, b => b.Title + ".0");
 				Assert.AreEqual(1, count);
 			}
 
@@ -131,10 +125,9 @@ namespace Tests
 		{
 			SetupBasePosts();
 
-			int count;
 			using (var db = Context.Sql())
 			{
-				count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Created, b => DateTime.Today);
+				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Created, b => DateTime.Today);
 				Assert.AreEqual(1, count);
 			}
 
@@ -150,10 +143,9 @@ namespace Tests
 		{
 			SetupBasePosts();
 
-			int count;
 			using (var db = Context.Sql())
 			{
-				count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Reads, b => b.Reads - 5);
+				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Reads, b => b.Reads - 5);
 				Assert.AreEqual(1, count);
 			}
 
@@ -169,10 +161,9 @@ namespace Tests
 		{
 			SetupBasePosts();
 
-			int count;
 			using (var db = Context.Sql())
 			{
-				count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T1").Update(b => b.Reads, b => b.Reads * 2);
+				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T1").Update(b => b.Reads, b => b.Reads * 2);
 				Assert.AreEqual(1, count);
 			}
 
@@ -188,10 +179,9 @@ namespace Tests
 		{
 			SetupBasePosts();
 
-			int count;
 			using (var db = Context.Sql())
 			{
-				count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T1").Update(b => b.Reads, b => b.Reads / 2);
+				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T1").Update(b => b.Reads, b => b.Reads / 2);
 				Assert.AreEqual(1, count);
 			}
 
@@ -226,9 +216,6 @@ namespace Tests
 
 			using (var db = Context.SqlCe())
 			{
-				var lower = DateTime.Today.AddDays(-1);
-				var upper = DateTime.Today.AddDays(1);
-
 				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Title, b => b.Title + ".0");
 				Assert.AreEqual(1, count);
 			}
@@ -260,6 +247,5 @@ namespace Tests
 				db.SaveChanges();
 			}
 		}
-
 	}
 }

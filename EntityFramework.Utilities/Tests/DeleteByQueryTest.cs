@@ -3,7 +3,7 @@ using System.Linq;
 using EntityFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Tests.FakeDomain;
-using Tests.FakeDomain.Models;
+using Tests.Models;
 
 namespace Tests
 {
@@ -75,7 +75,6 @@ namespace Tests
 				var posts = db.BlogPosts.ToList();
 				Assert.AreEqual(1, posts.Count);
 				Assert.AreEqual("T3", posts.First().Title);
-
 			}
 		}
 
@@ -190,6 +189,5 @@ namespace Tests
 
 			Assert.IsNotNull(fallbackText);
 		}
-
 	}
 }

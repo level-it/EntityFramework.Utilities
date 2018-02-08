@@ -7,9 +7,9 @@ using EntityFramework.Utilities;
 
 namespace PerformanceTests
 {
-	class Program
+	internal class Program
 	{
-		static void Main(string[] args)
+		private static void Main()
 		{
 			BatchIteration(25);
 			BatchIteration(25);
@@ -24,7 +24,6 @@ namespace PerformanceTests
 			BatchIteration(100000);
 			NormalIteration(100000);
 		}
-
 
 		private static void NormalIteration(int count)
 		{
@@ -107,7 +106,6 @@ namespace PerformanceTests
 				db.SaveChanges();
 				stop.Stop();
 				Console.WriteLine("delete all entities: " + stop.ElapsedMilliseconds + "ms");
-
 			}
 		}
 
@@ -150,7 +148,6 @@ namespace PerformanceTests
 				EFBatchOperation.For(db, db.Comments).Where(x => true).Delete();
 				stop.Stop();
 				Console.WriteLine("delete all entities: " + stop.ElapsedMilliseconds + "ms");
-
 			}
 		}
 
@@ -176,7 +173,7 @@ namespace PerformanceTests
 		{
 			var comments = Enumerable.Repeat('a', count).Select((c, i) => new Comment
 			{
-				Text = ((char)(c + (i % 25))).ToString(),
+				Text = ((char)(c + i % 25)).ToString(),
 				Date = DateTime.Now.AddDays(i),
 				Address = new Address
 				{
@@ -192,10 +189,7 @@ namespace PerformanceTests
 	public class Context : DbContext
 	{
 		public Context()
-			: base("Data Source=./; Initial Catalog=EFUTest; Integrated Security=SSPI; MultipleActiveResultSets=True")
-		{
-
-		}
+			: base("Data Source=./; Initial Catalog=EFUTest; Integrated Security=SSPI; MultipleActiveResultSets=True") { }
 
 		public IDbSet<Comment> Comments { get; set; }
 		public DbSet<Publication> Publications { get; set; }

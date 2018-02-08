@@ -5,7 +5,7 @@ using System.Linq;
 using EntityFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Tests.FakeDomain;
-using Tests.FakeDomain.Models;
+using Tests.Models;
 
 namespace Tests
 {
@@ -87,7 +87,6 @@ namespace Tests
 				Assert.AreEqual("FN2", fn2.FirstName);
 				Assert.AreEqual("FN1", fn1.FirstName);
 
-
 				Assert.AreEqual(2, fn1.PhoneNumbers.Count);
 				Assert.AreEqual('1', fn1.PhoneNumbers.First().Number.First());
 				Assert.AreEqual(2, fn2.PhoneNumbers.Count);
@@ -148,9 +147,7 @@ namespace Tests
 
 				Assert.AreEqual(0, fn3.PhoneNumbers.Count);
 				Assert.AreEqual(2, fn3.Emails.Count);
-
 			}
-
 		}
 
 		[TestMethod]
@@ -182,7 +179,6 @@ namespace Tests
 
 				Assert.AreEqual(0, fn3.PhoneNumbers.Count);
 				Assert.AreEqual(2, fn3.Emails.Count);
-
 			}
 		}
 
@@ -215,7 +211,6 @@ namespace Tests
 
 				Assert.AreEqual(0, fn3.PhoneNumbers.Count);
 				Assert.AreEqual(2, fn3.Emails.Count);
-
 			}
 		}
 
@@ -350,7 +345,6 @@ namespace Tests
 				Assert.AreEqual(2, fn2.Emails.Count);
 			}
 		}
-
 
 		[TestMethod]
 		public void SingleInclude_LoadsChildrenOrdered()
@@ -496,7 +490,8 @@ namespace Tests
 				Title = "Director",
 				Id = Guid.NewGuid(),
 				BirthDate = DateTime.Today,
-				PhoneNumbers = new List<PhoneNumber>(){
+				PhoneNumbers = new List<PhoneNumber>
+				{
 					   new PhoneNumber{
 						   Id = Guid.NewGuid(),
 						   Number = "10134"
@@ -504,7 +499,7 @@ namespace Tests
 					   new PhoneNumber{
 						   Id = Guid.NewGuid(),
 						   Number = "15678"
-					   },
+					   }
 					}
 			});
 			db.Contacts.Add(new Contact
@@ -514,7 +509,8 @@ namespace Tests
 				Title = "Associate",
 				Id = Guid.NewGuid(),
 				BirthDate = DateTime.Today,
-				PhoneNumbers = new List<PhoneNumber>(){
+				PhoneNumbers = new List<PhoneNumber>
+				{
 					   new PhoneNumber{
 						   Id = Guid.NewGuid(),
 						   Number = "20134"
@@ -522,12 +518,12 @@ namespace Tests
 					   new PhoneNumber{
 						   Id = Guid.NewGuid(),
 						   Number = "25678"
-					   },
+					   }
 					},
-				Emails = new List<Email>()
+				Emails = new List<Email>
 				{
 					new Email{Id = Guid.NewGuid(), Address = "m21@mail.com" },
-					new Email{Id = Guid.NewGuid(), Address = "m22@mail.com" },
+					new Email{Id = Guid.NewGuid(), Address = "m22@mail.com" }
 				}
 			});
 			db.Contacts.Add(new Contact
@@ -537,34 +533,34 @@ namespace Tests
 				Title = "Vice President",
 				Id = Guid.NewGuid(),
 				BirthDate = DateTime.Today,
-				Emails = new List<Email>()
+				Emails = new List<Email>
 				{
 					new Email{Id = Guid.NewGuid(), Address = "m31@mail.com" },
-					new Email{Id = Guid.NewGuid(), Address = "m32@mail.com" },
+					new Email{Id = Guid.NewGuid(), Address = "m32@mail.com" }
 				}
 			});
 
 			var blogPost1 = BlogPost.Create("BP1");
-			blogPost1.Comments = new List<Comment>()
-				{
-					new Comment() { Text = "C1" }
+			blogPost1.Comments = new List<Comment>
+			{
+					new Comment { Text = "C1" }
 				};
 			db.BlogPosts.Add(blogPost1);
 
 			var blogPost2 = BlogPost.Create("BP2");
-			blogPost2.Comments = new List<Comment>()
-				{
-					new Comment() { Text = "C2" },
-					new Comment() { Text = "C3" }
+			blogPost2.Comments = new List<Comment>
+			{
+					new Comment { Text = "C2" },
+					new Comment { Text = "C3" }
 				};
 			db.BlogPosts.Add(blogPost2);
 
 			var blogPost3 = BlogPost.Create("BP3");
-			blogPost3.Comments = new List<Comment>()
-				{
-					new Comment() { Text = "C4" },
-					new Comment() { Text = "C5" },
-					new Comment() { Text = "C6" }
+			blogPost3.Comments = new List<Comment>
+			{
+					new Comment { Text = "C4" },
+					new Comment { Text = "C5" },
+					new Comment { Text = "C6" }
 				};
 			db.BlogPosts.Add(blogPost3);
 

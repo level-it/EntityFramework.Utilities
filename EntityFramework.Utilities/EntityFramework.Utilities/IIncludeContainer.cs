@@ -7,10 +7,10 @@ namespace EntityFramework.Utilities
 {
 	public interface IIncludeContainer<T>
 	{
-		IEnumerable<IncludeExecuter<T>> Includes { get; }
+		IEnumerable<IncludeExecuter> Includes { get; }
 	}
 
-	public class IncludeExecuter<T>
+	public class IncludeExecuter
 	{
 		internal Type ElementType { get; set; }
 		internal Action<IEnumerable<MethodCallExpression>, IEnumerable> Loader { get; set; }

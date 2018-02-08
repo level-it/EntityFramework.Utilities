@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace Tests.FakeDomain.Models
+namespace Tests.Models
 {
 	public class RenamedAndReorderedBlogPost
 	{
-		public int ID { get; set; }
+		public int Id { get; set; }
 		public DateTime Created { get; set; }
 		public string Title { get; set; }
 		public int Reads { get; set; }
@@ -14,7 +14,7 @@ namespace Tests.FakeDomain.Models
 			return @"CREATE TABLE [dbo].[RenamedAndReorderedBlogPosts](
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[Title] [nvarchar](max) NULL,
-    [Created2] [datetime] NOT NULL,
+	[Created2] [datetime] NOT NULL,
 	[Reads2] [int] NOT NULL,
  CONSTRAINT [PK_BlogPosts] PRIMARY KEY CLUSTERED 
 (
@@ -25,14 +25,11 @@ namespace Tests.FakeDomain.Models
 
 		internal static RenamedAndReorderedBlogPost Create(string title)
 		{
-
 			return new RenamedAndReorderedBlogPost
 			{
 				Title = title,
 				Created = DateTime.Now
 			};
 		}
-
 	}
-
 }

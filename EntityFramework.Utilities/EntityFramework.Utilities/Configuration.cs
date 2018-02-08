@@ -7,13 +7,11 @@ namespace EntityFramework.Utilities
 	{
 		static Configuration()
 		{
-			Providers = new List<IQueryProvider>();
-			Providers.Add(new SqlQueryProvider());
+			Providers = new List<IQueryProvider> { new SqlQueryProvider() };
 
 			Log = m => { };
 
 			DisableDefaultFallback = true;
-
 		}
 
 		/// <summary>
@@ -31,6 +29,5 @@ namespace EntityFramework.Utilities
 		/// Otherwise it will fall back to the default EF behaviour meaning a performance penalty
 		/// </summary>
 		public static bool DisableDefaultFallback { get; set; }
-
 	}
 }

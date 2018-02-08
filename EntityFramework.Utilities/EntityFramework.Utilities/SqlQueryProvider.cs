@@ -9,20 +9,20 @@ namespace EntityFramework.Utilities
 {
 	public class SqlQueryProvider : IQueryProvider
 	{
-		public bool CanDelete { get { return true; } }
-		public bool CanUpdate { get { return true; } }
-		public bool CanInsert { get { return true; } }
-		public bool CanBulkUpdate { get { return true; } }
+		public bool CanDelete => true;
+		public bool CanUpdate => true;
+		public bool CanInsert => true;
+		public bool CanBulkUpdate => true;
 
 		public string GetDeleteQuery(QueryInformation queryInfo)
 		{
-			return string.Format("DELETE FROM [{0}].[{1}] {2}", queryInfo.Schema, queryInfo.Table, queryInfo.WhereSql);
+			return $"DELETE FROM [{queryInfo.Schema}].[{queryInfo.Table}] {queryInfo.WhereSql}";
 		}
 
 		public string GetUpdateQuery(QueryInformation predicateQueryInfo, QueryInformation modificationQueryInfo)
 		{
 			var msql = modificationQueryInfo.WhereSql.Replace("WHERE ", "");
-			var indexOfAnd = msql.IndexOf("AND");
+			var indexOfAnd = msql.IndexOf("AND", StringComparison.Ordinal);
 			var update = indexOfAnd == -1 ? msql : msql.Substring(0, indexOfAnd).Trim();
 
 			var updateRegex = new Regex(@"(\[[^\]]+\])[^=]+=(.+)", RegexOptions.IgnoreCase);
@@ -39,18 +39,18 @@ namespace EntityFramework.Utilities
 			}
 			else
 			{
-				updateSql = string.Join(" = ", update.Split(new string[] { " = " }, StringSplitOptions.RemoveEmptyEntries).Reverse());
+				updateSql = string.Join(" = ", update.Split(new[] { " = " }, StringSplitOptions.RemoveEmptyEntries).Reverse());
 			}
 
-
-			return string.Format("UPDATE [{0}].[{1}] SET {2} {3}", predicateQueryInfo.Schema, predicateQueryInfo.Table, updateSql, predicateQueryInfo.WhereSql);
+			return
+				$"UPDATE [{predicateQueryInfo.Schema}].[{predicateQueryInfo.Table}] SET {updateSql} {predicateQueryInfo.WhereSql}";
 		}
 
 		public void InsertItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, int? executeTimeout, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, SqlTransaction transaction = null)
 		{
 			using (var reader = new EFDataReader<T>(items, properties))
 			{
-				var con = storeConnection as SqlConnection;
+				var con = (SqlConnection) storeConnection;
 				if (con.State != System.Data.ConnectionState.Open)
 				{
 					con.Open();
@@ -63,7 +63,7 @@ namespace EntityFramework.Utilities
 					copy.BatchSize = batchSize ?? 15000; //default batch size
 					if (!string.IsNullOrWhiteSpace(schema))
 					{
-						copy.DestinationTableName = string.Format("[{0}].[{1}]", schema, tableName);
+						copy.DestinationTableName = $"[{schema}].[{tableName}]";
 					}
 					else
 					{
@@ -82,7 +82,6 @@ namespace EntityFramework.Utilities
 			}
 		}
 
-
 		public void UpdateItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, UpdateSpecification<T> updateSpecification, int? executeTimeout = null, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, SqlTransaction transaction = null)
 		{
 			var tempTableName = "#temp_" + tableName + "_" + Guid.NewGuid().ToString("N");
@@ -91,9 +90,9 @@ namespace EntityFramework.Utilities
 			var columns = filtered.Select(c => "[" + c.NameInDatabase + "] " + c.DataType);
 			var pkConstraint = string.Join(", ", properties.Where(p => p.IsPrimaryKey).Select(c => "[" + c.NameInDatabase + "]"));
 
-			var str = string.Format("CREATE TABLE {0}.[{1}]({2}, PRIMARY KEY ({3}))", schema, tempTableName, string.Join(", ", columns), pkConstraint);
+			var str = $"CREATE TABLE {schema}.[{tempTableName}]({string.Join(", ", columns)}, PRIMARY KEY ({pkConstraint}))";
 
-			var con = storeConnection as SqlConnection;
+			var con = (SqlConnection) storeConnection;
 			if (con.State != System.Data.ConnectionState.Open)
 			{
 				con.Open();
@@ -103,18 +102,18 @@ namespace EntityFramework.Utilities
 			var pks = properties.Where(p => p.IsPrimaryKey).Select(x => "ORIG.[" + x.NameInDatabase + "] = TEMP.[" + x.NameInDatabase + "]");
 			var filter = string.Join(" and ",  pks);
 			var mergeCommand =  string.Format(@"UPDATE [{0}].[{1}]
-                SET
-                    {4}
-                FROM
-                    [{0}].[{1}] ORIG
-                INNER JOIN
-                     [{0}].[{2}] TEMP
-                ON 
-                    {3}", schema, tableName, tempTableName, filter, setters);
+				SET
+					{4}
+				FROM
+					[{0}].[{1}] ORIG
+				INNER JOIN
+					 [{0}].[{2}] TEMP
+				ON 
+					{3}", schema, tableName, tempTableName, filter, setters);
 
 			using (var createCommand = new SqlCommand(str, con))
 			using (var mCommand = new SqlCommand(mergeCommand, con))
-			using (var dCommand = new SqlCommand(string.Format("DROP table {0}.[{1}]", schema, tempTableName), con))
+			using (var dCommand = new SqlCommand($"DROP table {schema}.[{tempTableName}]", con))
 			{
 				createCommand.CommandTimeout = executeTimeout ?? 600;
 				mCommand.CommandTimeout = executeTimeout ?? 600;
@@ -124,16 +123,12 @@ namespace EntityFramework.Utilities
 				mCommand.ExecuteNonQuery();
 				dCommand.ExecuteNonQuery();
 			}
-
-
 		}
 
-
-		public bool CanHandle(System.Data.Common.DbConnection storeConnection)
+		public bool CanHandle(DbConnection storeConnection)
 		{
 			return storeConnection is SqlConnection;
 		}
-
 
 		public QueryInformation GetQueryInformation<T>(System.Data.Entity.Core.Objects.ObjectQuery<T> query)
 		{
@@ -147,7 +142,7 @@ namespace EntityFramework.Utilities
 			queryInfo.Table = match.Groups[2].Value;
 			queryInfo.Alias = match.Groups[3].Value;
 
-			var i = str.IndexOf("WHERE");
+			var i = str.IndexOf("WHERE", StringComparison.Ordinal);
 			if (i > 0)
 			{
 				var whereClause = str.Substring(i);
@@ -155,6 +150,5 @@ namespace EntityFramework.Utilities
 			}
 			return queryInfo;
 		}
-
 	}
 }

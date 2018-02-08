@@ -4,7 +4,7 @@ using System.Linq;
 using EntityFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Tests.FakeDomain;
-using Tests.FakeDomain.Models;
+using Tests.Models;
 
 namespace Tests
 {
@@ -24,10 +24,9 @@ namespace Tests
 				db.SaveChanges();
 			}
 
-			int count;
 			using (var db = new RenamedAndReorderedContext())
 			{
-				count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Created, b => DateTime.Today);
+				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Created, b => DateTime.Today);
 				Assert.AreEqual(1, count);
 			}
 
@@ -51,10 +50,9 @@ namespace Tests
 				db.SaveChanges();
 			}
 
-			int count;
 			using (var db = new RenamedAndReorderedContext())
 			{
-				count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Created, b => DbFunctions.AddDays(b.Created, 1));
+				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Created, b => DbFunctions.AddDays(b.Created, 1));
 				Assert.AreEqual(1, count);
 			}
 
@@ -78,10 +76,9 @@ namespace Tests
 				db.SaveChanges();
 			}
 
-			int count;
 			using (var db = new RenamedAndReorderedContext())
 			{
-				count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Reads, b => b.Reads + 100);
+				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Update(b => b.Reads, b => b.Reads + 100);
 				Assert.AreEqual(1, count);
 			}
 

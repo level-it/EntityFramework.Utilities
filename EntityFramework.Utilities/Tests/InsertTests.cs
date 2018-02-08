@@ -3,7 +3,7 @@ using System.Linq;
 using EntityFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Tests.FakeDomain;
-using Tests.FakeDomain.Models;
+using Tests.Models;
 
 namespace Tests
 {
@@ -21,7 +21,7 @@ namespace Tests
 				}
 				db.Database.Create();
 
-				List<Contact> people = new List<Contact>();
+				var people = new List<Contact>();
 				people.Add(Contact.Build("FN1", "LN1", "Director"));
 				people.Add(Contact.Build("FN2", "LN2", "Associate"));
 				people.Add(Contact.Build("FN3", "LN3", "Vice President"));
@@ -49,7 +49,7 @@ namespace Tests
 				}
 				db.Database.Create();
 
-				List<Person> people = new List<Person>();
+				var people = new List<Person>();
 				people.Add(Person.Build("FN1", "LN1"));
 				people.Add(Person.Build("FN2", "LN2"));
 				people.Add(Person.Build("FN3", "LN3"));
@@ -76,7 +76,8 @@ namespace Tests
 				}
 				db.Database.Create();
 
-				var list = new List<BlogPost>(){
+				var list = new List<BlogPost>
+				{
 					BlogPost.Create("T1"),
 					BlogPost.Create("T2"),
 					BlogPost.Create("T3")
@@ -103,7 +104,8 @@ namespace Tests
 				}
 				db.Database.Create();
 
-				var list = new List<BlogPost>(){
+				var list = new List<BlogPost>
+				{
 					BlogPost.Create("T1"),
 					BlogPost.Create("T2"),
 					BlogPost.Create("T3")
@@ -132,7 +134,8 @@ namespace Tests
 			using (var db = Context.Sql())
 			{
 
-				var list = new List<BlogPost>(){
+				var list = new List<BlogPost>
+				{
 					BlogPost.Create("T1"),
 					BlogPost.Create("T2"),
 					BlogPost.Create("T3")
@@ -164,7 +167,8 @@ namespace Tests
 			using (var db = new RenamedAndReorderedContext())
 			{
 
-				var list = new List<RenamedAndReorderedBlogPost>(){
+				var list = new List<RenamedAndReorderedBlogPost>
+				{
 					RenamedAndReorderedBlogPost.Create("T1"),
 					RenamedAndReorderedBlogPost.Create("T2"),
 					RenamedAndReorderedBlogPost.Create("T3")
@@ -195,7 +199,8 @@ namespace Tests
 				db.Database.Create();
 			}
 
-			var list = new List<BlogPost>(){
+			var list = new List<BlogPost>
+			{
 					BlogPost.Create("T1"),
 					BlogPost.Create("T2"),
 					BlogPost.Create("T3")
@@ -214,11 +219,10 @@ namespace Tests
 			Assert.IsNotNull(fallbackText);
 		}
 
-
 		[TestMethod]
 		public void InsertAll_WithForeignKey()
 		{
-			int postId = -1;
+			int postId;
 			using (var db = Context.Sql())
 			{
 				if (db.Database.Exists())
@@ -230,11 +234,12 @@ namespace Tests
 				var bp = BlogPost.Create("B1");
 				db.BlogPosts.Add(bp);
 				db.SaveChanges();
-				postId = bp.ID;
+				postId = bp.Id;
 
-				var comments = new List<Comment>(){
-					new Comment{Text = "C1", PostId = bp.ID },
-					new Comment{Text = "C2", PostId = bp.ID },
+				var comments = new List<Comment>
+				{
+					new Comment{Text = "C1", PostId = bp.Id },
+					new Comment{Text = "C2", PostId = bp.Id }
 				};
 
 				EFBatchOperation.For(db, db.Comments).InsertAll(comments);

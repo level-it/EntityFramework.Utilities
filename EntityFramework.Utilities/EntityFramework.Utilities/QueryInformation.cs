@@ -1,5 +1,4 @@
-﻿
-namespace EntityFramework.Utilities
+﻿namespace EntityFramework.Utilities
 {
 	public class QueryInformation
 	{

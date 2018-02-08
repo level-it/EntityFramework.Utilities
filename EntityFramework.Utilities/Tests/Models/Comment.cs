@@ -1,4 +1,4 @@
-﻿namespace Tests.FakeDomain.Models
+﻿namespace Tests.Models
 {
 	public class Comment
 	{

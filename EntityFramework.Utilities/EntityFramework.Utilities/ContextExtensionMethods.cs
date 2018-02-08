@@ -8,20 +8,18 @@ namespace EntityFramework.Utilities
 	{
 		public class AttachAndModifyContext<T> where T : class
 		{
-			private DbSet<T> set;
-			private System.Data.Entity.Infrastructure.DbEntityEntry<T> entry;
+			private readonly System.Data.Entity.Infrastructure.DbEntityEntry<T> _entry;
 
-			public AttachAndModifyContext(DbSet<T> set, System.Data.Entity.Infrastructure.DbEntityEntry<T> entry)
+			public AttachAndModifyContext(System.Data.Entity.Infrastructure.DbEntityEntry<T> entry)
 			{
-				this.set = set;
-				this.entry = entry;
+				_entry = entry;
 			}
 			public AttachAndModifyContext<T> Set<TProp>(Expression<Func<T, TProp>> property, TProp value)
 			{
 
 				var setter = ExpressionHelper.PropertyExpressionToSetter(property);
-				setter(entry.Entity, value);
-				entry.Property(property).IsModified = true;
+				setter(_entry.Entity, value);
+				_entry.Property(property).IsModified = true;
 				return this;
 			}
 		}
@@ -31,7 +29,7 @@ namespace EntityFramework.Utilities
 			set.Attach(item);
 			var entry = source.Entry(item);
 
-			return new AttachAndModifyContext<T>(set, entry);
+			return new AttachAndModifyContext<T>(entry);
 		}
 	}
 }

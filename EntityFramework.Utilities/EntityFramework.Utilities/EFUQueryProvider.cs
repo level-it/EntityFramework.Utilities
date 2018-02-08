@@ -8,44 +8,43 @@ namespace EntityFramework.Utilities
 {
 	public class EFUQueryProvider<T> : ExpressionVisitor, System.Linq.IQueryProvider
 	{
-		internal IQueryable source;
+		internal IQueryable Source;
 
 		public EFUQueryProvider(IQueryable source)
 		{
-			if (source == null) throw new ArgumentNullException("source");
-			this.source = source;
+			Source = source ?? throw new ArgumentNullException(nameof(source));
 		}
 
 		public IQueryable<TElement> CreateQuery<TElement>(Expression expression)
 		{
-			if (expression == null) throw new ArgumentNullException("expression");
+			if (expression == null) throw new ArgumentNullException(nameof(expression));
 
-			return new EFUQueryable<TElement>(source, expression) as IQueryable<TElement>;
+			return new EFUQueryable<TElement>(Source, expression) as IQueryable<TElement>;
 		}
 
 		public IQueryable CreateQuery(Expression expression)
 		{
-			if (expression == null) throw new ArgumentNullException("expression");
-			Type elementType = expression.Type.GetGenericArguments().First();
-			IQueryable result = (IQueryable)Activator.CreateInstance(typeof(EFUQueryable<>).MakeGenericType(elementType),
-				new object[] { source, expression });
+			if (expression == null) throw new ArgumentNullException(nameof(expression));
+			var elementType = expression.Type.GetGenericArguments().First();
+			var result = (IQueryable)Activator.CreateInstance(typeof(EFUQueryable<>).MakeGenericType(elementType),
+				new object[] { Source, expression });
 			return result;
 		}
 
 		public TResult Execute<TResult>(Expression expression)
 		{
-			if (expression == null) throw new ArgumentNullException("expression");
-			object result = this.Execute(expression);
+			if (expression == null) throw new ArgumentNullException(nameof(expression));
+			var result = Execute(expression);
 			return (TResult)result;
 		}
 
 		public object Execute(Expression expression)
 		{
-			if (expression == null) throw new ArgumentNullException("expression");
+			if (expression == null) throw new ArgumentNullException(nameof(expression));
 
 			var efuQuery = GetIncludeContainer(expression);
-			Expression translated = this.Visit(expression);
-			var result = source.Provider.Execute(translated);
+			var translated = Visit(expression);
+			var result = Source.Provider.Execute(translated);
 
 			var first = efuQuery.Includes.First();
 			first.SingleItemLoader(result);
@@ -55,13 +54,13 @@ namespace EntityFramework.Utilities
 
 		internal IEnumerable ExecuteEnumerable(Expression expression)
 		{
-			if (expression == null) throw new ArgumentNullException("expression");
+			if (expression == null) throw new ArgumentNullException(nameof(expression));
 
 			var modifiers = GetModifiersForQuery(expression);
 
 			var efuQuery = GetIncludeContainer(expression);
-			Expression translated = this.Visit(expression);
-			var translatedQuery = source.Provider.CreateQuery(translated);
+			var translated = Visit(expression);
+			var translatedQuery = Source.Provider.CreateQuery(translated);
 			var list = new List<object>();
 			foreach (var item in translatedQuery)
 			{
@@ -80,7 +79,7 @@ namespace EntityFramework.Utilities
 			var temp = expression;
 			while (temp is MethodCallExpression)
 			{
-				var func = (temp as MethodCallExpression);
+				var func = temp as MethodCallExpression;
 				if (func.Method.Name != "IncludeEFU" && func.Method.Name != "Include")
 				{
 					modifiers.Add(func);
@@ -93,13 +92,13 @@ namespace EntityFramework.Utilities
 
 		private IIncludeContainer<T> GetIncludeContainer(Expression expression)
 		{
-			Expression temp = expression;
+			var temp = expression;
 			while (temp is MethodCallExpression)
 			{
 				temp = (temp as MethodCallExpression).Arguments[0];
 			}
 
-			return ((temp as ConstantExpression).Value as IIncludeContainer<T>);
+			return (temp as ConstantExpression)?.Value as IIncludeContainer<T>;
 		}
 
 		#region Visitors
@@ -108,12 +107,9 @@ namespace EntityFramework.Utilities
 			// fix up the Expression tree to work with EF again
 			if (c.Type == typeof(EFUQueryable<T>))
 			{
-				return source.Expression;
+				return Source.Expression;
 			}
-			else
-			{
-				return base.VisitConstant(c);
-			}
+			return base.VisitConstant(c);
 		}
 		#endregion
 	}

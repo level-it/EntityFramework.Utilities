@@ -3,21 +3,21 @@ using System.Linq.Expressions;
 
 namespace EntityFramework.Utilities
 {
-	class ReplaceVisitor : ExpressionVisitor
+	internal class ReplaceVisitor : ExpressionVisitor
 	{
-		private readonly Expression from, to;
+		private readonly Expression _from, _to;
 		public ReplaceVisitor(Expression from, Expression to)
 		{
-			this.from = from;
-			this.to = to;
+			_from = from;
+			_to = to;
 		}
 		public override Expression Visit(Expression node)
 		{
-			return node == from ? to : base.Visit(node);
+			return node == _from ? _to : base.Visit(node);
 		}
 	}
 
-	static class ExpressionHelper
+	internal static class ExpressionHelper
 	{
 		internal static Expression<Func<T, bool>> CombineExpressions<T, TP>(Expression<Func<T, TP>> prop, Expression<Func<T, TP>> modifier) where T : class
 		{
@@ -29,15 +29,13 @@ namespace EntityFramework.Utilities
 
 		public static string GetPropertyName<TSource, TProperty>(this Expression<Func<TSource, TProperty>> propertyLambda)
 		{
-			Type type = typeof(TSource);
-
 			var temp = propertyLambda.Body;
 			while (temp is UnaryExpression)
 			{
 				temp = (temp as UnaryExpression).Operand;
 			}
-			MemberExpression member = temp as MemberExpression;
-			return member.Member.Name;
+			var member = temp as MemberExpression;
+			return member?.Member.Name;
 		}
 
 		//http://stackoverflow.com/a/2824409/507279

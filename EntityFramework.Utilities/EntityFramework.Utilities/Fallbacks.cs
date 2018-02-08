@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace EntityFramework.Utilities
 {
-	class Fallbacks
+	internal class Fallbacks
 	{
 		internal static void DefaultInsertAll<T>(ObjectContext context, IEnumerable<T> items) where T : class
 		{
@@ -37,7 +37,6 @@ namespace EntityFramework.Utilities
 			context.SaveChanges();
 			return items.Count;
 		}
-
 
 		internal static int DefaultUpdate<T, TP>(ObjectContext context, System.Linq.Expressions.Expression<Func<T, bool>> predicate, System.Linq.Expressions.Expression<Func<T, TP>> prop, System.Linq.Expressions.Expression<Func<T, TP>> modifier) where T : class
 		{

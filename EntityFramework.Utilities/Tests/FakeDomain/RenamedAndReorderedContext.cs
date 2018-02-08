@@ -1,6 +1,6 @@
 ﻿using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-using Tests.FakeDomain.Models;
+using Tests.Models;
 
 namespace Tests.FakeDomain
 {
@@ -11,10 +11,10 @@ namespace Tests.FakeDomain
 		{
 			Database.DefaultConnectionFactory = new SqlConnectionFactory("System.Data.SqlServer");
 			Database.SetInitializer(new CreateDatabaseIfNotExists<RenamedAndReorderedContext>());
-			this.Configuration.ValidateOnSaveEnabled = false;
-			this.Configuration.LazyLoadingEnabled = false;
-			this.Configuration.ProxyCreationEnabled = false;
-			this.Configuration.AutoDetectChangesEnabled = false;
+			Configuration.ValidateOnSaveEnabled = false;
+			Configuration.LazyLoadingEnabled = false;
+			Configuration.ProxyCreationEnabled = false;
+			Configuration.AutoDetectChangesEnabled = false;
 		}
 		public DbSet<RenamedAndReorderedBlogPost> BlogPosts { get; set; }
 
@@ -39,6 +39,5 @@ namespace Tests.FakeDomain
 				db.Database.ExecuteSqlCommand(RenamedAndReorderedBlogPost.CreateTableSql());
 			}
 		}
-
 	}
 }

@@ -13,19 +13,19 @@ namespace EntityFramework.Utilities
 		public static void ForceDelete(this Database db, string name = null)
 		{
 			name = name ?? GetDatabaseName(db.Connection);
-			using (SqlConnection sqlconnection = new SqlConnection(db.Connection.ConnectionString)) //Need to run this under other transaction
+			using (var sqlconnection = new SqlConnection(db.Connection.ConnectionString)) //Need to run this under other transaction
 			{
 				sqlconnection.Open();
 				// if you used master db as Initial Catalog, there is no need to change database
 				sqlconnection.ChangeDatabase("master");
 
-				string rollbackCommand = @"ALTER DATABASE [" + name + "] SET  SINGLE_USER WITH ROLLBACK IMMEDIATE;";
+				var rollbackCommand = @"ALTER DATABASE [" + name + "] SET  SINGLE_USER WITH ROLLBACK IMMEDIATE;";
 
-				SqlCommand deletecommand = new SqlCommand(rollbackCommand, sqlconnection);
+				var deletecommand = new SqlCommand(rollbackCommand, sqlconnection);
 
 				deletecommand.ExecuteNonQuery();
 
-				string deleteCommand = @"DROP DATABASE [" + name + "];";
+				var deleteCommand = @"DROP DATABASE [" + name + "];";
 
 				deletecommand = new SqlCommand(deleteCommand, sqlconnection);
 
@@ -37,6 +37,5 @@ namespace EntityFramework.Utilities
 		{
 			return new SqlConnectionStringBuilder(dbConnection.ConnectionString).InitialCatalog;
 		}
-
 	}
 }

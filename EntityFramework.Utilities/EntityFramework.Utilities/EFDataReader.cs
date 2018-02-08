@@ -16,18 +16,19 @@ namespace EntityFramework.Utilities
 
 		public EFDataReader(IEnumerable<T> items, IEnumerable<ColumnMapping> properties)
 		{
-			Properties = properties.Select(p => p.NameOnObject).ToList();
-			Accessors = properties.Select(p =>
+			var columnMappings = properties as ColumnMapping[] ?? properties.ToArray();
+			Properties = columnMappings.Select(p => p.NameOnObject).ToList();
+			Accessors = columnMappings.Select(p =>
 			{
 				if (p.StaticValue != null)
 				{
-					Func<T,object> func = x => p.StaticValue;
-					return func;
+					object Func(T x) => p.StaticValue;
+					return Func;
 				}
 
 				var parts = p.NameOnObject.Split('.');
 
-				PropertyInfo info = typeof(T).GetProperty(parts[0]);
+				var info = typeof(T).GetProperty(parts[0]);
 				var method = typeof(EFDataReader<T>).GetMethod("MakeDelegate");
 				var generic = method.MakeGenericMethod(info.PropertyType);
 
@@ -45,57 +46,40 @@ namespace EntityFramework.Utilities
 					temp = i;
 				}
 
-
 				return getter;
 			}).ToList();
 			Items = items;
 			Enumerator = items.GetEnumerator();
 		}
 
-		public static Func<T, object> MakeDelegate<U>(MethodInfo @get)
+		public static Func<T, object> MakeDelegate<TU>(MethodInfo @get)
 		{
-			var f = (Func<T, U>)Delegate.CreateDelegate(typeof(Func<T, U>), @get);
+			var f = (Func<T, TU>)Delegate.CreateDelegate(typeof(Func<T, TU>), @get);
 			return t => f(t);
 		}
 
 		public override void Close()
 		{
-			this.Enumerator = null;
-			this.Items = null;
+			Enumerator = null;
+			Items = null;
 		}
 
-		public override int FieldCount
-		{
-			get
-			{
-				return Properties.Count;
-			}
-		}
+		public override int FieldCount => Properties.Count;
 
-		public override bool HasRows
-		{
-			get { return this.Items != null && this.Items.Any(); }
-		}
+		public override bool HasRows => Items != null && Items.Any();
 
-		public override bool IsClosed
-		{
-			get { return Enumerator == null; }
-		}
+		public override bool IsClosed => Enumerator == null;
 
 		public override bool Read()
 		{
-			return this.Enumerator.MoveNext();
+			return Enumerator.MoveNext();
 		}
 
-		public override int RecordsAffected
-		{
-			get { throw new NotImplementedException(); }
-		}
-
+		public override int RecordsAffected => throw new NotImplementedException();
 
 		public override object GetValue(int ordinal)
 		{
-			return this.Accessors[ordinal](this.Enumerator.Current);
+			return Accessors[ordinal](Enumerator.Current);
 		}
 
 		public override int GetOrdinal(string name)
@@ -105,15 +89,9 @@ namespace EntityFramework.Utilities
 
 		#region Not implemented
 
-		public override object this[string name]
-		{
-			get { throw new NotImplementedException(); }
-		}
+		public override object this[string name] => throw new NotImplementedException();
 
-		public override object this[int ordinal]
-		{
-			get { throw new NotImplementedException(); }
-		}
+		public override object this[int ordinal] => throw new NotImplementedException();
 
 		public override bool IsDBNull(int ordinal)
 		{
@@ -125,10 +103,7 @@ namespace EntityFramework.Utilities
 			throw new NotImplementedException();
 		}
 
-		public override int Depth
-		{
-			get { throw new NotImplementedException(); }
-		}
+		public override int Depth => throw new NotImplementedException();
 
 		public override bool GetBoolean(int ordinal)
 		{
@@ -231,6 +206,5 @@ namespace EntityFramework.Utilities
 		}
 
 		#endregion
-
 	}
 }

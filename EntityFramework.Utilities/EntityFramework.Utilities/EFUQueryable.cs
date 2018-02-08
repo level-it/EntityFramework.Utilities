@@ -7,54 +7,43 @@ namespace EntityFramework.Utilities
 {
 	public class EFUQueryable<T> : IOrderedQueryable<T>, IIncludeContainer<T>
 	{
-		private Expression expression = null;
-		private EFUQueryProvider<T> provider = null;
-		private List<IncludeExecuter<T>> includes = new List<IncludeExecuter<T>>();
+		private readonly EFUQueryProvider<T> _provider;
+		private readonly List<IncludeExecuter> _includes = new List<IncludeExecuter>();
 
-		public IEnumerable<IncludeExecuter<T>> Includes { get { return includes; } }
+		public IEnumerable<IncludeExecuter> Includes => _includes;
 
 		public EFUQueryable(IQueryable source)
 		{
-			expression = Expression.Constant(this);
-			provider = new EFUQueryProvider<T>(source);
+			Expression = Expression.Constant(this);
+			_provider = new EFUQueryProvider<T>(source);
 		}
 
 		public EFUQueryable(IQueryable source, Expression e)
 		{
-			if (e == null) throw new ArgumentNullException("e");
-			expression = e;
-			provider = new EFUQueryProvider<T>(source);
+			Expression = e ?? throw new ArgumentNullException(nameof(e));
+			_provider = new EFUQueryProvider<T>(source);
 		}
 
 		public IEnumerator<T> GetEnumerator()
 		{
-			return provider.ExecuteEnumerable(this.expression).Cast<T>().GetEnumerator();
+			return _provider.ExecuteEnumerable(Expression).Cast<T>().GetEnumerator();
 		}
 
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
-			return provider.ExecuteEnumerable(this.expression).GetEnumerator();
+			return _provider.ExecuteEnumerable(Expression).GetEnumerator();
 		}
 
-		public EFUQueryable<T> Include(IncludeExecuter<T> include)
+		public EFUQueryable<T> Include(IncludeExecuter include)
 		{
-			this.includes.Add(include);
+			_includes.Add(include);
 			return this;
 		}
 
-		public Type ElementType
-		{
-			get { return typeof(T); }
-		}
+		public Type ElementType => typeof(T);
 
-		public Expression Expression
-		{
-			get { return expression; }
-		}
+		public Expression Expression { get; }
 
-		public System.Linq.IQueryProvider Provider
-		{
-			get { return provider; }
-		}
+		public System.Linq.IQueryProvider Provider => _provider;
 	}
 }

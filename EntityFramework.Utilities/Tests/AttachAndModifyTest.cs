@@ -2,14 +2,13 @@
 using EntityFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Tests.FakeDomain;
-using Tests.FakeDomain.Models;
+using Tests.Models;
 
 namespace Tests
 {
 	[TestClass]
 	public class AttachAndModifyTest
 	{
-
 		[TestMethod]
 		public void AttachAndModify_UpdateSingleItem_UpdatesDatabase()
 		{
@@ -18,12 +17,12 @@ namespace Tests
 			int postId;
 			using (var db = Context.Sql())
 			{
-				postId = db.BlogPosts.First(b => b.Title == "T1").ID;
+				postId = db.BlogPosts.First(b => b.Title == "T1").Id;
 			}
 
 			using (var db = Context.Sql())
 			{
-				db.AttachAndModify(new BlogPost { ID = postId, Author = new AuthorInfo { Address = new Address() } })
+				db.AttachAndModify(new BlogPost { Id = postId, Author = new AuthorInfo { Address = new Address() } })
 					.Set(x => x.Reads, 10);
 				db.SaveChanges();
 			}
@@ -43,12 +42,12 @@ namespace Tests
 			int postId;
 			using (var db = Context.Sql())
 			{
-				postId = db.BlogPosts.First(b => b.Title == "T1").ID;
+				postId = db.BlogPosts.First(b => b.Title == "T1").Id;
 			}
 
 			using (var db = Context.Sql())
 			{
-				db.AttachAndModify(new BlogPost { ID = postId, Author = new AuthorInfo { Address = new Address() } })
+				db.AttachAndModify(new BlogPost { Id = postId, Author = new AuthorInfo { Address = new Address() } })
 					.Set(x => x.Reads, 10)
 					.Set(x => x.Title, "NewTitle");
 				db.SaveChanges();
@@ -56,13 +55,11 @@ namespace Tests
 
 			using (var db = Context.Sql())
 			{
-				var p2 = db.BlogPosts.First(b => b.ID == postId);
+				var p2 = db.BlogPosts.First(b => b.Id == postId);
 				Assert.AreEqual(10, p2.Reads);
 				Assert.AreEqual("NewTitle", p2.Title);
 			}
 		}
-
-
 
 		private static void SetupBasePosts()
 		{
@@ -82,6 +79,5 @@ namespace Tests
 				db.SaveChanges();
 			}
 		}
-
 	}
 }

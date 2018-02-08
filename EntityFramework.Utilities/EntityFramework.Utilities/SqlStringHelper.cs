@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace EntityFramework.Utilities
 {
-	static class SqlStringHelper
+	internal static class SqlStringHelper
 	{
 		internal static string FixParantheses(string str)
 		{
@@ -13,20 +13,21 @@ namespace EntityFramework.Utilities
 			var toRemove = new HashSet<int>();
 			foreach (var c in chars.Select((c, i) => new { c, i }))
 			{
-				if (c.c == '(')
+				switch (c.c)
 				{
-					stack.Push(new Tuple<int, int>(c.i, -1));
-				}
-				else if (c.c == ')')
-				{
-					if (stack.Any())
-					{
-						stack.Pop();
-					}
-					else
-					{
-						toRemove.Add(c.i);
-					}
+					case '(':
+						stack.Push(new Tuple<int, int>(c.i, -1));
+						break;
+					case ')':
+						if (stack.Any())
+						{
+							stack.Pop();
+						}
+						else
+						{
+							toRemove.Add(c.i);
+						}
+						break;
 				}
 			}
 			foreach (var item in stack)

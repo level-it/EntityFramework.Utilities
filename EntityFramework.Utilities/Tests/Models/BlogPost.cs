@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Tests.FakeDomain.Models
+namespace Tests.Models
 {
 	public class BlogPost
 	{
-		public int ID { get; set; }
+		public int Id { get; set; }
 		public string Title { get; set; }
 		public string ShortTitle { get; set; }
 		public DateTime Created { get; set; }
 		public int Reads { get; set; }
 		public AuthorInfo Author { get; set; }
 		public ICollection<Comment> Comments { get; set; }
-
 
 		public static BlogPost Create(string title, DateTime created)
 		{
@@ -31,7 +30,6 @@ namespace Tests.FakeDomain.Models
 						ZipCode = "41654"
 					}
 				}
-
 			};
 		}
 
@@ -54,7 +52,6 @@ namespace Tests.FakeDomain.Models
 				}
 			};
 		}
-
 	}
 
 	public class AuthorInfo

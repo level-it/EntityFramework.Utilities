@@ -36,14 +36,14 @@ namespace EntityFramework.Utilities
 
 			var fkGetter = GetForeignKeyGetter<T, TChild>(cSpaceTables);
 
-			PropertyInfo pkInfo = typeof(T).GetProperty(keys.First().Name);
+			var pkInfo = typeof(T).GetProperty(keys.First().Name);
 			var pkGetter = MakeGetterDelegate<T>(pkInfo);
 
 			var childCollectionModifiers = new List<MethodCallExpression>();
-			var childProp = SetCollectionModifiersAndGetChildProperty<T, TChild>(collectionSelector, childCollectionModifiers);
+			var childProp = SetCollectionModifiersAndGetChildProperty(collectionSelector, childCollectionModifiers);
 			var setter = MakeSetterDelegate<T>(childProp);
 
-			var e = new IncludeExecuter<T>
+			var e = new IncludeExecuter
 			{
 				ElementType = typeof(TChild),
 				SingleItemLoader = (parent) =>
@@ -53,14 +53,14 @@ namespace EntityFramework.Utilities
 						return;
 					}
 					var children = octx.CreateObjectSet<TChild>();
-					var lambdaExpression = GetRootEntityToChildCollectionSelector<T, TChild>(cSpaceType);
+					GetRootEntityToChildCollectionSelector<T, TChild>(cSpaceType);
 
-					var q = ApplyChildCollectionModifiers<TChild>(children, childCollectionModifiers);
+					var q = ApplyChildCollectionModifiers(children, childCollectionModifiers);
 
-					var rootPK = pkGetter((T)parent);
+					var rootPk = pkGetter((T)parent);
 					var param = Expression.Parameter(typeof(TChild), "x");
-					var fk = GetFKProperty<T, TChild>(cSpaceTables);
-					var body = Expression.Equal(Expression.Property(param, fk), Expression.Constant(rootPK));
+					var fk = GetFkProperty<T, TChild>(cSpaceTables);
+					var body = Expression.Equal(Expression.Property(param, fk), Expression.Constant(rootPk));
 					var where = Expression.Lambda<Func<TChild, bool>>(body, param);
 
 					q = q.AsNoTracking().Where(where);
@@ -73,10 +73,10 @@ namespace EntityFramework.Utilities
 
 					dynamic dynamicSet = octx.GetType()
 									.GetMethod("CreateObjectSet", new Type[] { })
-									.MakeGenericMethod(baseType)
+									?.MakeGenericMethod(baseType)
 									.Invoke(octx, new Object[] { });
 
-					var set = dynamicSet.OfType<T>() as ObjectQuery<T>;
+					if (!(dynamicSet?.OfType<T>() is ObjectQuery<T> set)) return;
 
 					IQueryable<T> q = set;
 					foreach (var item in rootFilters)
@@ -90,7 +90,7 @@ namespace EntityFramework.Utilities
 					var lambdaExpression = GetRootEntityToChildCollectionSelector<T, TChild>(cSpaceType);
 
 					var childQ = q.SelectMany(lambdaExpression);
-					childQ = ApplyChildCollectionModifiers<TChild>(childQ, childCollectionModifiers);
+					childQ = ApplyChildCollectionModifiers(childQ, childCollectionModifiers);
 
 					var dict = childQ.AsNoTracking().ToLookup(fkGetter);
 					var list = parents.Cast<T>().ToList();
@@ -149,7 +149,7 @@ namespace EntityFramework.Utilities
 			childCollectionModifiers.Reverse(); //We parse from right to left so reverse it
 			if (!(temp is MemberExpression))
 			{
-				throw new ArgumentException("Could not find a MemberExpression", "collectionSelector");
+				throw new ArgumentException("Could not find a MemberExpression", nameof(collectionSelector));
 			}
 
 			var childProp = (temp as MemberExpression).Member as PropertyInfo;
@@ -160,12 +160,12 @@ namespace EntityFramework.Utilities
 			where T : class
 			where TChild : class
 		{
-			var fkInfo = GetFKProperty<T, TChild>(cSpaceTables);
+			var fkInfo = GetFkProperty<T, TChild>(cSpaceTables);
 			var fkGetter = MakeGetterDelegate<TChild>(fkInfo);
 			return fkGetter;
 		}
 
-		private static PropertyInfo GetFKProperty<T, TChild>(System.Collections.ObjectModel.ReadOnlyCollection<EntityType> cSpaceTables)
+		private static PropertyInfo GetFkProperty<T, TChild>(System.Collections.ObjectModel.ReadOnlyCollection<EntityType> cSpaceTables)
 			where T : class
 			where TChild : class
 		{
@@ -177,16 +177,21 @@ namespace EntityFramework.Utilities
 
 		private static IQueryable<TChild> SortQuery<TChild>(IQueryable<TChild> query, MethodCallExpression item, string method)
 		{
-			var body = (item.Arguments[1] as LambdaExpression);
+			var body = (LambdaExpression) item.Arguments[1];
 
-			MethodCallExpression call = Expression.Call(
-				typeof(Queryable),
-				method,
-				new[] { typeof(TChild), body.Body.Type },
-				query.Expression,
-				Expression.Quote(body));
+			if (body != null)
+			{
+				var call = Expression.Call(
+					typeof(Queryable),
+					method,
+					new[] { typeof(TChild), body.Body.Type },
+					query.Expression,
+					Expression.Quote(body));
 
-			return (IOrderedQueryable<TChild>)query.Provider.CreateQuery<TChild>(call);
+				return (IOrderedQueryable<TChild>)query.Provider.CreateQuery<TChild>(call);
+			}
+
+			return null;
 		}
 
 		private static Expression<Func<T, IEnumerable<TChild>>> GetRootEntityToChildCollectionSelector<T, TChild>(EntityType cSpaceType)
@@ -199,9 +204,9 @@ namespace EntityFramework.Utilities
 			return lambdaExpression;
 		}
 
-		static Action<T, object> MakeSetterDelegate<T>(PropertyInfo property)
+		private static Action<T, object> MakeSetterDelegate<T>(PropertyInfo property)
 		{
-			MethodInfo setMethod = property.GetSetMethod();
+			var setMethod = property.GetSetMethod();
 			if (setMethod != null && setMethod.GetParameters().Length == 1)
 			{
 				var target = Expression.Parameter(typeof(T));
@@ -211,27 +216,21 @@ namespace EntityFramework.Utilities
 				return Expression.Lambda<Action<T, object>>(body, target, value)
 					.Compile();
 			}
-			else
-			{
-				return null;
-			}
+			return null;
 		}
 
-		static Func<X, object> MakeGetterDelegate<X>(PropertyInfo property)
+		private static Func<TX, object> MakeGetterDelegate<TX>(PropertyInfo property)
 		{
-			MethodInfo getMethod = property.GetGetMethod();
+			var getMethod = property.GetGetMethod();
 			if (getMethod != null)
 			{
-				var target = Expression.Parameter(typeof(X));
+				var target = Expression.Parameter(typeof(TX));
 				var body = Expression.Call(target, getMethod);
 				Expression conversion = Expression.Convert(body, typeof(object));
-				return Expression.Lambda<Func<X, object>>(conversion, target)
+				return Expression.Lambda<Func<TX, object>>(conversion, target)
 					.Compile();
 			}
-			else
-			{
-				return null;
-			}
+			return null;
 		}
 	}
 }

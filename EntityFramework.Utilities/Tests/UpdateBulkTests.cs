@@ -4,7 +4,6 @@ using System.Linq;
 using EntityFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Tests.FakeDomain;
-using Tests.FakeDomain.Models;
 using Tests.Models;
 
 namespace Tests
@@ -29,7 +28,7 @@ namespace Tests
 
 			using (var db = Context.Sql())
 			{
-				var posts = db.BlogPosts.OrderBy(b => b.ID).ToList();
+				var posts = db.BlogPosts.OrderBy(b => b.Id).ToList();
 				Assert.AreEqual("T4", posts[0].Title);
 				Assert.AreEqual("T8", posts[1].Title);
 				Assert.AreEqual("T12", posts[2].Title);
@@ -47,7 +46,7 @@ namespace Tests
 				}
 				db.Database.Create();
 
-				List<Contact> people = new List<Contact>();
+				var people = new List<Contact>();
 				people.Add(Contact.Build("FN1", "LN1", "Director"));
 				people.Add(Contact.Build("FN2", "LN2", "Associate"));
 				people.Add(Contact.Build("FN3", "LN3", "Vice President"));
@@ -86,8 +85,9 @@ namespace Tests
 				}
 				db.Database.Create();
 
-				var list = new List<NumericTestObject>(){
-					new NumericTestObject{ }
+				var list = new List<NumericTestObject>
+				{
+					new NumericTestObject()
 				};
 
 				EFBatchOperation.For(db, db.NumericTestsObjects).InsertAll(list);
@@ -126,28 +126,29 @@ namespace Tests
 				db.Database.Create();
 
 				var guid = Guid.NewGuid();
-				var list = new List<MultiPKObject>(){
-					new MultiPKObject{ PK1 = guid, PK2 = 0 },
-					new MultiPKObject{ PK1 = guid, PK2 = 1 }
+				var list = new List<MultiPkObject>
+				{
+					new MultiPkObject{ Pk1 = guid, Pk2 = 0 },
+					new MultiPkObject{ Pk1 = guid, Pk2 = 1 }
 				};
 
-				EFBatchOperation.For(db, db.MultiPKObjects).InsertAll(list);
+				EFBatchOperation.For(db, db.MultiPkObjects).InsertAll(list);
 			}
 
 			using (var db = Context.Sql())
 			{
-				var items = db.MultiPKObjects.ToList();
+				var items = db.MultiPkObjects.ToList();
 				var index = 1;
 				foreach (var item in items)
 				{
 					item.Text = "#" + index++;
 				}
-				EFBatchOperation.For(db, db.MultiPKObjects).UpdateAll(items, spec => spec.ColumnsToUpdate(p => p.Text));
+				EFBatchOperation.For(db, db.MultiPkObjects).UpdateAll(items, spec => spec.ColumnsToUpdate(p => p.Text));
 			}
 
 			using (var db = Context.Sql())
 			{
-				var items = db.MultiPKObjects.OrderBy(x => x.PK2).ToList();
+				var items = db.MultiPkObjects.OrderBy(x => x.Pk2).ToList();
 				Assert.AreEqual("#1", items[0].Text);
 				Assert.AreEqual("#2", items[1].Text);
 			}
@@ -170,7 +171,7 @@ namespace Tests
 
 			using (var db = Context.Sql())
 			{
-				var posts = db.BlogPosts.OrderBy(b => b.ID).ToList();
+				var posts = db.BlogPosts.OrderBy(b => b.Id).ToList();
 				Assert.AreEqual("T4", posts[0].ShortTitle);
 				Assert.AreEqual("T8", posts[1].ShortTitle);
 				Assert.AreEqual("T12", posts[2].ShortTitle);
@@ -187,7 +188,8 @@ namespace Tests
 				}
 				db.Database.Create();
 
-				var list = new List<BlogPost>(){
+				var list = new List<BlogPost>
+				{
 					BlogPost.Create("T1"),
 					BlogPost.Create("T2"),
 					BlogPost.Create("T3")
