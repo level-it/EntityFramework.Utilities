@@ -33,7 +33,7 @@ namespace EntityFramework.Utilities
         /// <param name="updateSpecification">Define which columns to update</param>
         /// <param name="connection">The DbConnection to use for the insert. Only needed when for example a profiler wraps the connection. Then you need to provide a connection of the type the provider use.</param>
         /// <param name="batchSize">The size of each batch. Default depends on the provider. SqlProvider uses 15000 as default</param>
-        void UpdateAll<TEntity>(IEnumerable<TEntity> items, Action<UpdateSpecification<TEntity>> updateSpecification, DbConnection connection = null, int? batchSize = null) where TEntity : class, T;
+        void UpdateAll<TEntity>(IEnumerable<TEntity> items, Action<UpdateSpecification<TEntity>> updateSpecification, DbConnection connection = null, int? batchSize = null, SqlTransaction transaction = null) where TEntity : class, T;
     }
 
     public class UpdateSpecification<T>
@@ -136,7 +136,7 @@ namespace EntityFramework.Utilities
         }
 
 
-        public void UpdateAll<TEntity>(IEnumerable<TEntity> items, Action<UpdateSpecification<TEntity>> updateSpecification, DbConnection connection = null, int? batchSize = null) where TEntity : class, T
+        public void UpdateAll<TEntity>(IEnumerable<TEntity> items, Action<UpdateSpecification<TEntity>> updateSpecification, DbConnection connection = null, int? batchSize = null, SqlTransaction transaction = null) where TEntity : class, T
         {
             var con = context.Connection as EntityConnection;
             if (con == null && connection == null)
@@ -166,7 +166,7 @@ namespace EntityFramework.Utilities
 
                 var spec = new UpdateSpecification<TEntity>();
                 updateSpecification(spec);
-                provider.UpdateItems(items, tableMapping.Schema, tableMapping.TableName, properties, connectionToUse, batchSize, spec);
+                provider.UpdateItems(items, tableMapping.Schema, tableMapping.TableName, properties, connectionToUse, batchSize, spec, transaction);
             }
             else
             {
