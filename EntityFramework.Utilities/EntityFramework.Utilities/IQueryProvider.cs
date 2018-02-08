@@ -7,23 +7,23 @@ using System.Text;
 
 namespace EntityFramework.Utilities
 {
-    public interface IQueryProvider
-    {
-        bool CanDelete { get; }
-        bool CanUpdate { get; }
-        bool CanInsert { get; }
-        bool CanBulkUpdate { get; }
+	public interface IQueryProvider
+	{
+		bool CanDelete { get; }
+		bool CanUpdate { get; }
+		bool CanInsert { get; }
+		bool CanBulkUpdate { get; }
 
-        string GetDeleteQuery(QueryInformation queryInformation);
-        string GetUpdateQuery(QueryInformation predicateQueryInfo, QueryInformation modificationQueryInfo);
-        void InsertItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, SqlTransaction transaction = null);
-        void UpdateItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, UpdateSpecification<T> updateSpecification, SqlTransaction transaction = null);
+		string GetDeleteQuery(QueryInformation queryInformation);
+		string GetUpdateQuery(QueryInformation predicateQueryInfo, QueryInformation modificationQueryInfo);
+		void InsertItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, SqlTransaction transaction = null);
+		void UpdateItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, UpdateSpecification<T> updateSpecification, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, SqlTransaction transaction = null);
 
-        bool CanHandle(DbConnection storeConnection);
-
-
-        QueryInformation GetQueryInformation<T>(System.Data.Entity.Core.Objects.ObjectQuery<T> query);
+		bool CanHandle(DbConnection storeConnection);
 
 
-    }
+		QueryInformation GetQueryInformation<T>(System.Data.Entity.Core.Objects.ObjectQuery<T> query);
+
+
+	}
 }
