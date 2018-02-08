@@ -47,7 +47,7 @@ namespace EntityFramework.Utilities
 				$"UPDATE [{predicateQueryInfo.Schema}].[{predicateQueryInfo.Table}] SET {updateSql} {predicateQueryInfo.WhereSql}";
 		}
 
-		public void InsertItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, int? executeTimeout, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, SqlTransaction transaction = null)
+		public void InsertItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, int? executeTimeout, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, DbTransaction transaction = null)
 		{
 			using (var reader = new EFDataReader<T>(items, properties))
 			{
@@ -58,9 +58,9 @@ namespace EntityFramework.Utilities
 					con.Open();
 				}
 
-				using (var copy = transaction == null
-					? new SqlBulkCopy(con.ConnectionString, copyOptions)
-					: new SqlBulkCopy(con, copyOptions, transaction))
+				using (var copy = transaction is SqlTransaction sqlTransaction
+					? new SqlBulkCopy(con, copyOptions, sqlTransaction)
+					: new SqlBulkCopy(con.ConnectionString, copyOptions))
 				{
 					copy.BulkCopyTimeout = executeTimeout ?? 600;
 					copy.BatchSize = batchSize ?? 15000; //default batch size
@@ -87,7 +87,7 @@ namespace EntityFramework.Utilities
 			}
 		}
 
-		public void UpdateItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, UpdateSpecification<T> updateSpecification, int? executeTimeout = null, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, SqlTransaction transaction = null)
+		public void UpdateItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, UpdateSpecification<T> updateSpecification, int? executeTimeout = null, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, DbTransaction transaction = null)
 		{
 			var tempTableName = "#temp_" + tableName + "_" + Guid.NewGuid().ToString("N");
 			var columnsToUpdate = updateSpecification.Properties.Select(p => p.GetPropertyName()).ToDictionary(x => x);
