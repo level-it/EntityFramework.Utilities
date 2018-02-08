@@ -86,7 +86,7 @@ namespace EntityFramework.Utilities
 
 		public void UpdateItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, UpdateSpecification<T> updateSpecification, int? executeTimeout = null, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, SqlTransaction transaction = null)
 		{
-			var tempTableName = "#temp_" + tableName + "_" + Guid.NewGuid();
+			var tempTableName = "#temp_" + tableName + "_" + Guid.NewGuid().ToString("N");
 			var columnsToUpdate = updateSpecification.Properties.Select(p => p.GetPropertyName()).ToDictionary(x => x);
 			var filtered = properties.Where(p => columnsToUpdate.ContainsKey(p.NameOnObject) || p.IsPrimaryKey).ToList();
 			var columns = filtered.Select(c => "[" + c.NameInDatabase + "] " + c.DataType);
@@ -100,18 +100,18 @@ namespace EntityFramework.Utilities
 				con.Open();
 			}
 
-			var setters = string.Join(",", filtered.Where(c => !c.IsPrimaryKey).Select(c => "[" + c.NameInDatabase + "] = TEMP.[" + c.NameInDatabase + "]"));
-			var pks = properties.Where(p => p.IsPrimaryKey).Select(x => "ORIG.[" + x.NameInDatabase + "] = TEMP.[" + x.NameInDatabase + "]");
-			var filter = string.Join(" and ",  pks);
-			var mergeCommand =  string.Format(@"UPDATE [{0}]
+            var setters = string.Join(",", filtered.Where(c => !c.IsPrimaryKey).Select(c => "[" + c.NameInDatabase + "] = TEMP.[" + c.NameInDatabase + "]"));
+            var pks = properties.Where(p => p.IsPrimaryKey).Select(x => "ORIG.[" + x.NameInDatabase + "] = TEMP.[" + x.NameInDatabase + "]");
+            var filter = string.Join(" and ",  pks);
+            var mergeCommand =  string.Format(@"UPDATE [{0}].[{1}]
                 SET
-                    {3}
+                    {4}
                 FROM
-                    [{0}] ORIG
+                    [{0}].[{1}] ORIG
                 INNER JOIN
-                     [{1}] TEMP
+                     [{0}].[{2}] TEMP
                 ON 
-                    {2}", tableName, tempTableName, filter, setters);
+                    {3}", schema, tableName, tempTableName, filter, setters);
 
 			using (var createCommand = new SqlCommand(str, con))
 			using (var mCommand = new SqlCommand(mergeCommand, con))
