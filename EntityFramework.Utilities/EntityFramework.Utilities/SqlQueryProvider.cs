@@ -47,7 +47,7 @@ namespace EntityFramework.Utilities
 			return string.Format("UPDATE [{0}].[{1}] SET {2} {3}", predicateQueryInfo.Schema, predicateQueryInfo.Table, updateSql, predicateQueryInfo.WhereSql);
 		}
 
-		public void InsertItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, SqlTransaction transaction = null)
+		public void InsertItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, int? executeTimeout, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, SqlTransaction transaction = null)
 		{
 			using (var reader = new EFDataReader<T>(items, properties))
 			{
@@ -60,6 +60,7 @@ namespace EntityFramework.Utilities
 					? new SqlBulkCopy(con.ConnectionString, copyOptions)
 					: new SqlBulkCopy(con, copyOptions, transaction))
 				{
+					copy.BulkCopyTimeout = executeTimeout ?? 600;
 					copy.BatchSize = batchSize ?? 15000; //default batch size
 					if (!string.IsNullOrWhiteSpace(schema))
 					{
@@ -83,7 +84,7 @@ namespace EntityFramework.Utilities
 		}
 
 
-		public void UpdateItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, UpdateSpecification<T> updateSpecification, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, SqlTransaction transaction = null)
+		public void UpdateItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, UpdateSpecification<T> updateSpecification, int? executeTimeout = null, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, SqlTransaction transaction = null)
 		{
 			var tempTableName = "temp_" + tableName + "_" + Guid.NewGuid();
 			var columnsToUpdate = updateSpecification.Properties.Select(p => p.GetPropertyName()).ToDictionary(x => x);
@@ -116,8 +117,11 @@ namespace EntityFramework.Utilities
 			using (var mCommand = new SqlCommand(mergeCommand, con))
 			using (var dCommand = new SqlCommand(string.Format("DROP table {0}.[{1}]", schema, tempTableName), con))
 			{
+				createCommand.CommandTimeout = executeTimeout ?? 600;
+				mCommand.CommandTimeout = executeTimeout ?? 600;
+
 				createCommand.ExecuteNonQuery();
-				InsertItems(items, schema, tempTableName, filtered, storeConnection, batchSize, copyOptions, transaction);
+				InsertItems(items, schema, tempTableName, filtered, storeConnection, batchSize, executeTimeout, copyOptions, transaction);
 				mCommand.ExecuteNonQuery();
 				dCommand.ExecuteNonQuery();
 			}
