@@ -28,6 +28,7 @@ namespace EntityFramework.Utilities
 			var updateRegex = new Regex(@"(\[[^\]]+\])[^=]+=(.+)", RegexOptions.IgnoreCase);
 			var match = updateRegex.Match(update);
 			string updateSql;
+
 			if (match.Success)
 			{
 				var col = match.Groups[1];
@@ -51,16 +52,19 @@ namespace EntityFramework.Utilities
 			using (var reader = new EFDataReader<T>(items, properties))
 			{
 				var con = (SqlConnection) storeConnection;
+
 				if (con.State != System.Data.ConnectionState.Open)
 				{
 					con.Open();
 				}
+
 				using (var copy = transaction == null
 					? new SqlBulkCopy(con.ConnectionString, copyOptions)
 					: new SqlBulkCopy(con, copyOptions, transaction))
 				{
 					copy.BulkCopyTimeout = executeTimeout ?? 600;
 					copy.BatchSize = batchSize ?? 15000; //default batch size
+
 					if (!string.IsNullOrWhiteSpace(schema))
 					{
 						copy.DestinationTableName = $"[{schema}].[{tableName}]";
@@ -76,6 +80,7 @@ namespace EntityFramework.Utilities
 					{
 						copy.ColumnMappings.Add(i, properties[i].NameInDatabase);
 					}
+
 					copy.WriteToServer(reader);
 					copy.Close();
 				}
@@ -93,6 +98,7 @@ namespace EntityFramework.Utilities
 			var str = $"CREATE TABLE {schema}.[{tempTableName}]({string.Join(", ", columns)}, PRIMARY KEY ({pkConstraint}))";
 
 			var con = (SqlConnection) storeConnection;
+
 			if (con.State != System.Data.ConnectionState.Open)
 			{
 				con.Open();
@@ -143,11 +149,13 @@ namespace EntityFramework.Utilities
 			queryInfo.Alias = match.Groups[3].Value;
 
 			var i = str.IndexOf("WHERE", StringComparison.Ordinal);
+
 			if (i > 0)
 			{
 				var whereClause = str.Substring(i);
 				queryInfo.WhereSql = whereClause.Replace(queryInfo.Alias + ".", "");
 			}
+
 			return queryInfo;
 		}
 	}

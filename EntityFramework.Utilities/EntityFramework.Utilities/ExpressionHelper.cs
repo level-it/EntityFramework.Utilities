@@ -11,6 +11,7 @@ namespace EntityFramework.Utilities
 			_from = from;
 			_to = to;
 		}
+
 		public override Expression Visit(Expression node)
 		{
 			return node == _from ? _to : base.Visit(node);
@@ -30,10 +31,12 @@ namespace EntityFramework.Utilities
 		public static string GetPropertyName<TSource, TProperty>(this Expression<Func<TSource, TProperty>> propertyLambda)
 		{
 			var temp = propertyLambda.Body;
+
 			while (temp is UnaryExpression)
 			{
 				temp = (temp as UnaryExpression).Operand;
 			}
+
 			var member = temp as MemberExpression;
 			return member?.Member.Name;
 		}
@@ -41,7 +44,6 @@ namespace EntityFramework.Utilities
 		//http://stackoverflow.com/a/2824409/507279
 		internal static Action<T, TP> PropertyExpressionToSetter<T, TP>(Expression<Func<T, TP>> prop)
 		{
-
 			// re-write in .NET 4.0 as a "set"
 			var member = (MemberExpression)prop.Body;
 			var param = Expression.Parameter(typeof(TP), "value");

@@ -46,12 +46,13 @@ namespace EntityFramework.Utilities
 			var e = new IncludeExecuter
 			{
 				ElementType = typeof(TChild),
-				SingleItemLoader = (parent) =>
+				SingleItemLoader = parent =>
 				{
 					if (parent == null)
 					{
 						return;
 					}
+
 					var children = octx.CreateObjectSet<TChild>();
 					GetRootEntityToChildCollectionSelector<T, TChild>(cSpaceType);
 
@@ -126,6 +127,7 @@ namespace EntityFramework.Utilities
 						throw new NotSupportedException("The method " + item.Method.Name + " is not supported in the child query");
 				}
 			}
+
 			return childQ;
 		}
 
@@ -134,19 +136,23 @@ namespace EntityFramework.Utilities
 			where TChild : class
 		{
 			var temp = collectionSelector.Body;
+
 			while (temp is MethodCallExpression)
 			{
 				var mce = temp as MethodCallExpression;
 				childCollectionModifiers.Add(mce);
 				temp = mce.Arguments[0];
 			}
+
 			//This loop is for VB, See: https://github.com/MikaelEliasson/EntityFramework.Utilities/issues/29
 			while (temp is UnaryExpression)
 			{
 				var ue = temp as UnaryExpression;
 				temp = ue.Operand;
 			}
+
 			childCollectionModifiers.Reverse(); //We parse from right to left so reverse it
+
 			if (!(temp is MemberExpression))
 			{
 				throw new ArgumentException("Could not find a MemberExpression", nameof(collectionSelector));
@@ -207,6 +213,7 @@ namespace EntityFramework.Utilities
 		private static Action<T, object> MakeSetterDelegate<T>(PropertyInfo property)
 		{
 			var setMethod = property.GetSetMethod();
+
 			if (setMethod != null && setMethod.GetParameters().Length == 1)
 			{
 				var target = Expression.Parameter(typeof(T));
@@ -216,12 +223,14 @@ namespace EntityFramework.Utilities
 				return Expression.Lambda<Action<T, object>>(body, target, value)
 					.Compile();
 			}
+
 			return null;
 		}
 
 		private static Func<TX, object> MakeGetterDelegate<TX>(PropertyInfo property)
 		{
 			var getMethod = property.GetGetMethod();
+
 			if (getMethod != null)
 			{
 				var target = Expression.Parameter(typeof(TX));
@@ -230,6 +239,7 @@ namespace EntityFramework.Utilities
 				return Expression.Lambda<Func<TX, object>>(conversion, target)
 					.Compile();
 			}
+
 			return null;
 		}
 	}

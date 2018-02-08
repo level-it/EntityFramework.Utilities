@@ -476,6 +476,7 @@ namespace Tests
 				{
 					db.Database.ForceDelete();
 				}
+
 				db.Database.Create();
 				CreateSmallTestSet(db);
 			}

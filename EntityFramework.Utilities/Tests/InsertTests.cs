@@ -19,12 +19,15 @@ namespace Tests
 				{
 					db.Database.Delete();
 				}
+
 				db.Database.Create();
 
-				var people = new List<Contact>();
-				people.Add(Contact.Build("FN1", "LN1", "Director"));
-				people.Add(Contact.Build("FN2", "LN2", "Associate"));
-				people.Add(Contact.Build("FN3", "LN3", "Vice President"));
+				var people = new List<Contact>
+				{
+					Contact.Build("FN1", "LN1", "Director"),
+					Contact.Build("FN2", "LN2", "Associate"),
+					Contact.Build("FN3", "LN3", "Vice President")
+				};
 
 				EFBatchOperation.For(db, db.People).InsertAll(people);
 			}
@@ -47,12 +50,15 @@ namespace Tests
 				{
 					db.Database.Delete();
 				}
+
 				db.Database.Create();
 
-				var people = new List<Person>();
-				people.Add(Person.Build("FN1", "LN1"));
-				people.Add(Person.Build("FN2", "LN2"));
-				people.Add(Person.Build("FN3", "LN3"));
+				var people = new List<Person>
+				{
+					Person.Build("FN1", "LN1"),
+					Person.Build("FN2", "LN2"),
+					Person.Build("FN3", "LN3")
+				};
 
 				EFBatchOperation.For(db, db.People).InsertAll(people);
 			}
@@ -74,6 +80,7 @@ namespace Tests
 				{
 					db.Database.Delete();
 				}
+
 				db.Database.Create();
 
 				var list = new List<BlogPost>
@@ -102,6 +109,7 @@ namespace Tests
 				{
 					db.Database.Delete();
 				}
+
 				db.Database.Create();
 
 				var list = new List<BlogPost>
@@ -128,12 +136,12 @@ namespace Tests
 				{
 					db.Database.Delete();
 				}
+
 				db.Database.Create();
 			}
 
 			using (var db = Context.Sql())
 			{
-
 				var list = new List<BlogPost>
 				{
 					BlogPost.Create("T1"),
@@ -159,6 +167,7 @@ namespace Tests
 				{
 					db.Database.Delete();
 				}
+
 				db.Database.Create();
 				db.Database.ExecuteSqlCommand("drop table dbo.RenamedAndReorderedBlogPosts;");
 				db.Database.ExecuteSqlCommand(RenamedAndReorderedBlogPost.CreateTableSql());
@@ -166,7 +175,6 @@ namespace Tests
 
 			using (var db = new RenamedAndReorderedContext())
 			{
-
 				var list = new List<RenamedAndReorderedBlogPost>
 				{
 					RenamedAndReorderedBlogPost.Create("T1"),
@@ -196,6 +204,7 @@ namespace Tests
 				{
 					db.Database.Delete();
 				}
+
 				db.Database.Create();
 			}
 
@@ -229,6 +238,7 @@ namespace Tests
 				{
 					db.Database.Delete();
 				}
+
 				db.Database.Create();
 
 				var bp = BlogPost.Create("B1");

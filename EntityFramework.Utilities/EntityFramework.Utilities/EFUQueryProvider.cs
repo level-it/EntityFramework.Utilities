@@ -77,6 +77,7 @@ namespace EntityFramework.Utilities
 		{
 			var modifiers = new List<MethodCallExpression>();
 			var temp = expression;
+
 			while (temp is MethodCallExpression)
 			{
 				var func = temp as MethodCallExpression;
@@ -84,8 +85,10 @@ namespace EntityFramework.Utilities
 				{
 					modifiers.Add(func);
 				}
+
 				temp = func.Arguments[0];
 			}
+
 			modifiers.Reverse(); //We parse in reverse order so undo that
 			return modifiers;
 		}
@@ -93,6 +96,7 @@ namespace EntityFramework.Utilities
 		private IIncludeContainer<T> GetIncludeContainer(Expression expression)
 		{
 			var temp = expression;
+
 			while (temp is MethodCallExpression)
 			{
 				temp = (temp as MethodCallExpression).Arguments[0];
@@ -109,6 +113,7 @@ namespace EntityFramework.Utilities
 			{
 				return Source.Expression;
 			}
+
 			return base.VisitConstant(c);
 		}
 		#endregion

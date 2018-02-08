@@ -18,6 +18,7 @@ namespace Tests
 						_connectionsStrings = JsonSerializer.DeserializeFromStream<ConnectionStrings>(stream);
 					}
 				}
+
 				return _connectionsStrings;
 			}
 		}

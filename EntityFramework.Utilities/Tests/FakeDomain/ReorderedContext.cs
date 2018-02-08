@@ -16,6 +16,7 @@ namespace Tests.FakeDomain
 			Configuration.ProxyCreationEnabled = false;
 			Configuration.AutoDetectChangesEnabled = false;
 		}
+
 		public IDbSet<ReorderedBlogPost> BlogPosts { get; set; }
 
 		protected override void OnModelCreating(DbModelBuilder modelBuilder)

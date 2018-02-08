@@ -14,15 +14,16 @@ namespace EntityFramework.Utilities
 			{
 				_entry = entry;
 			}
+
 			public AttachAndModifyContext<T> Set<TProp>(Expression<Func<T, TProp>> property, TProp value)
 			{
-
 				var setter = ExpressionHelper.PropertyExpressionToSetter(property);
 				setter(_entry.Entity, value);
 				_entry.Property(property).IsModified = true;
 				return this;
 			}
 		}
+
 		public static AttachAndModifyContext<T> AttachAndModify<T>(this DbContext source, T item) where T : class
 		{
 			var set = source.Set<T>();

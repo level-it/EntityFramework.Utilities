@@ -11,13 +11,15 @@ namespace EntityFramework.Utilities
 			var chars = str.ToCharArray();
 			var stack = new Stack<Tuple<int, int>>();
 			var toRemove = new HashSet<int>();
-			foreach (var c in chars.Select((c, i) => new { c, i }))
+
+			foreach (var c in chars.Select((c, i) => new { Character = c, Index = i }))
 			{
-				switch (c.c)
+				switch (c.Character)
 				{
 					case '(':
-						stack.Push(new Tuple<int, int>(c.i, -1));
+						stack.Push(new Tuple<int, int>(c.Index, -1));
 						break;
+
 					case ')':
 						if (stack.Any())
 						{
@@ -25,11 +27,12 @@ namespace EntityFramework.Utilities
 						}
 						else
 						{
-							toRemove.Add(c.i);
+							toRemove.Add(c.Index);
 						}
 						break;
 				}
 			}
+
 			foreach (var item in stack)
 			{
 				toRemove.Add(item.Item1);

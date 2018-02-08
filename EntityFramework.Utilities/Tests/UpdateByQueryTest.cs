@@ -64,6 +64,7 @@ namespace Tests
 				Assert.AreEqual(20, post.Reads);
 			}
 		}
+
 		private static int Get20()
 		{
 			return 20;
@@ -205,6 +206,7 @@ namespace Tests
 				{
 					db.Database.Delete();
 				}
+
 				db.Database.Create();
 
 				db.BlogPosts.Add(BlogPost.Create("T1", DateTime.Today.AddDays(-2)));
@@ -237,6 +239,7 @@ namespace Tests
 				{
 					db.Database.Delete();
 				}
+
 				db.Database.Create();
 
 				var p = BlogPost.Create("T1");

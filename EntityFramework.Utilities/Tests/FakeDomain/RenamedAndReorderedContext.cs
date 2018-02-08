@@ -16,6 +16,7 @@ namespace Tests.FakeDomain
 			Configuration.ProxyCreationEnabled = false;
 			Configuration.AutoDetectChangesEnabled = false;
 		}
+
 		public DbSet<RenamedAndReorderedBlogPost> BlogPosts { get; set; }
 
 		protected override void OnModelCreating(DbModelBuilder modelBuilder)
@@ -34,6 +35,7 @@ namespace Tests.FakeDomain
 				{
 					db.Database.Delete();
 				}
+
 				db.Database.Create();
 				db.Database.ExecuteSqlCommand("drop table dbo.RenamedAndReorderedBlogPosts;");
 				db.Database.ExecuteSqlCommand(RenamedAndReorderedBlogPost.CreateTableSql());

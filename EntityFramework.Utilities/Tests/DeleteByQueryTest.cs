@@ -19,6 +19,7 @@ namespace Tests
 				{
 					db.Database.Delete();
 				}
+
 				db.Database.Create();
 
 				db.BlogPosts.Add(BlogPost.Create("T1"));
@@ -29,10 +30,9 @@ namespace Tests
 				db.SaveChanges();
 			}
 
-			int count;
 			using (var db = Context.Sql())
 			{
-				count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Delete();
+				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Title == "T2").Delete();
 				Assert.AreEqual(2, count);
 			}
 
@@ -53,6 +53,7 @@ namespace Tests
 				{
 					db.Database.Delete();
 				}
+
 				db.Database.Create();
 
 				db.BlogPosts.Add(BlogPost.Create("T1", DateTime.Today.AddDays(-2)));
@@ -62,11 +63,10 @@ namespace Tests
 				db.SaveChanges();
 			}
 
-			int count;
 			using (var db = Context.Sql())
 			{
 				var limit = DateTime.Today;
-				count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Created < limit).Delete();
+				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Created < limit).Delete();
 				Assert.AreEqual(2, count);
 			}
 
@@ -87,6 +87,7 @@ namespace Tests
 				{
 					db.Database.Delete();
 				}
+
 				db.Database.Create();
 
 				db.BlogPosts.Add(BlogPost.Create("T1", DateTime.Today.AddDays(-2)));
@@ -96,12 +97,11 @@ namespace Tests
 				db.SaveChanges();
 			}
 
-			int count;
 			using (var db = Context.Sql())
 			{
 				var lower = DateTime.Today.AddDays(-1);
 				var upper = DateTime.Today.AddDays(1);
-				count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Created < upper && b.Created > lower).Delete();
+				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Created < upper && b.Created > lower).Delete();
 				Assert.AreEqual(1, count);
 			}
 
@@ -122,6 +122,7 @@ namespace Tests
 				{
 					db.Database.Delete();
 				}
+
 				db.Database.Create();
 
 				db.BlogPosts.Add(BlogPost.Create("T1", DateTime.Today.AddDays(-2)));
@@ -132,13 +133,12 @@ namespace Tests
 				db.SaveChanges();
 			}
 
-			int count;
 			using (var db = Context.Sql())
 			{
 				var lower = DateTime.Today.AddDays(-1);
 				var upper = DateTime.Today.AddDays(1);
 
-				count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Created < upper && b.Created > lower && b.Title == "T2.0").Delete();
+				var count = EFBatchOperation.For(db, db.BlogPosts).Where(b => b.Created < upper && b.Created > lower && b.Title == "T2.0").Delete();
 				Assert.AreEqual(1, count);
 			}
 
@@ -163,6 +163,7 @@ namespace Tests
 				{
 					db.Database.Delete();
 				}
+
 				db.Database.Create();
 
 				db.BlogPosts.Add(BlogPost.Create("T1", DateTime.Today.AddDays(-2)));

@@ -69,6 +69,7 @@ namespace Tests
 				{
 					db.Database.Delete();
 				}
+
 				db.Database.Create();
 
 				var p = BlogPost.Create("T1");

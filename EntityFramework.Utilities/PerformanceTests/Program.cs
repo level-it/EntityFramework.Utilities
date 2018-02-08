@@ -37,10 +37,12 @@ namespace PerformanceTests
 				db.Configuration.ValidateOnSaveEnabled = false;
 				var comments = GetEntities(count).ToList();
 				stop.Start();
+
 				foreach (var comment in comments)
 				{
 					db.Comments.Add(comment);
 				}
+
 				db.SaveChanges();
 				stop.Stop();
 				Console.WriteLine("Insert entities: " + stop.ElapsedMilliseconds + "ms");
@@ -113,9 +115,9 @@ namespace PerformanceTests
 		{
 			Console.WriteLine("Batch iteration with " + count + " entities");
 			CreateAndWarmUp();
+
 			using (var db = new Context())
 			{
-
 				var stop = new Stopwatch();
 				var comments = GetEntities(count).ToList();
 				stop.Start();

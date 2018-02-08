@@ -11,7 +11,6 @@ using System.Linq.Expressions;
 
 namespace EntityFramework.Utilities
 {
-
 	public interface IEFBatchOperationBase<T> where T : class
 	{
 		/// <summary>
@@ -55,6 +54,7 @@ namespace EntityFramework.Utilities
 		int Delete();
 		int Update<TP>(Expression<Func<T, TP>> prop, Expression<Func<T, TP>> modifier);
 	}
+
 	public static class EFBatchOperation
 	{
 		public static IEFBatchOperationBase<T> For<TContext, T>(TContext context, IDbSet<T> set)
@@ -64,6 +64,7 @@ namespace EntityFramework.Utilities
 			return EFBatchOperation<TContext, T>.For(context, set);
 		}
 	}
+
 	public class EFBatchOperation<TContext, T> : IEFBatchOperationBase<T>, IEFBatchOperationFiltered<T>
 		where T : class
 		where TContext : DbContext
@@ -104,9 +105,9 @@ namespace EntityFramework.Utilities
 			var connectionToUse = connection ?? con.StoreConnection;
 			var currentType = typeof(TEntity);
 			var provider = Configuration.Providers.FirstOrDefault(p => p.CanHandle(connectionToUse));
+
 			if (provider != null && provider.CanInsert)
 			{
-
 				var mapping = EfMappingFactory.GetMappingsForContext(_dbContext);
 				var typeMapping = mapping.TypeMappings[typeof(T)];
 				var tableMapping = typeMapping.TableMappings.First();
@@ -115,6 +116,7 @@ namespace EntityFramework.Utilities
 					.Where(p => currentType.IsSubclassOf(p.ForEntityType) || p.ForEntityType == currentType)
 					.Where(p => p.IsComputed == false)
 					.Select(p => new ColumnMapping { NameInDatabase = p.ColumnName, NameOnObject = p.PropertyName }).ToList();
+
 				if (tableMapping.TphConfiguration != null)
 				{
 					properties.Add(new ColumnMapping
@@ -146,9 +148,9 @@ namespace EntityFramework.Utilities
 			var connectionToUse = connection ?? con.StoreConnection;
 			var currentType = typeof(TEntity);
 			var provider = Configuration.Providers.FirstOrDefault(p => p.CanHandle(connectionToUse));
+
 			if (provider != null && provider.CanBulkUpdate)
 			{
-
 				var mapping = EfMappingFactory.GetMappingsForContext(_dbContext);
 				var typeMapping = mapping.TypeMappings[typeof(T)];
 				var tableMapping = typeMapping.TableMappings.First();
@@ -200,6 +202,7 @@ namespace EntityFramework.Utilities
 				var parameters = query.Parameters.Select(p => new SqlParameter { Value = p.Value, ParameterName = p.Name }).ToArray<object>();
 				return _context.ExecuteStoreCommand(delete, parameters);
 			}
+
 			Configuration.Log("Found provider: " + (provider?.GetType().Name ?? "[]") + " for " + con.StoreConnection.GetType().Name);
 			return Fallbacks.DefaultDelete(_context, _predicate);
 		}

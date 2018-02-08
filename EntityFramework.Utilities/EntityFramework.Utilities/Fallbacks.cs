@@ -15,10 +15,12 @@ namespace EntityFramework.Utilities
 			}
 
 			var set = context.CreateObjectSet<T>();
+
 			foreach (var item in items)
 			{
 				set.AddObject(item);
 			}
+
 			context.SaveChanges();
 		}
 
@@ -28,12 +30,15 @@ namespace EntityFramework.Utilities
 			{
 				throw new InvalidOperationException("No provider supporting the Delete operation for this datasource was found");
 			}
+
 			var set = context.CreateObjectSet<T>();
 			var items = set.Where(predicate).ToList();
+
 			foreach (var item in items)
 			{
 				set.DeleteObject(item);
 			}
+
 			context.SaveChanges();
 			return items.Count;
 		}
@@ -44,15 +49,18 @@ namespace EntityFramework.Utilities
 			{
 				throw new InvalidOperationException("No provider supporting the Update operation for this datasource was found");
 			}
+
 			var set = context.CreateObjectSet<T>();
 			var items = set.Where(predicate).ToList();
 
 			var setter = ExpressionHelper.PropertyExpressionToSetter(prop);
 			var compiledModifer = modifier.Compile();
+
 			foreach (var item in items)
 			{
 				setter(item, compiledModifer(item));
 			}
+
 			context.SaveChanges();
 			return items.Count;
 		}

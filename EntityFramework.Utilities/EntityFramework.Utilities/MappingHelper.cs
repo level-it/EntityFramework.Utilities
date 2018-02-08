@@ -124,7 +124,6 @@ namespace EntityFramework.Utilities
 			// Loop thru each entity type in the model
 			foreach (var set in conceptualContainer.BaseEntitySets.OfType<EntitySet>())
 			{
-
 				// Find the mapping between conceptual and storage model for this entity set
 				var mapping = metadata.GetItems<EntityContainerMapping>(DataSpace.CSSpace)
 						.Single()
@@ -260,6 +259,7 @@ namespace EntityFramework.Utilities
 		public static EfMapping GetMappingsForContext(DbContext context)
 		{
 			var type = context.GetType();
+
 			if (!Cache.TryGetValue(type, out var mapping))
 			{
 				//lock only if we don't have the item in the cache
@@ -272,6 +272,7 @@ namespace EntityFramework.Utilities
 					}
 				}
 			}
+
 			return mapping;
 		}
 	}
