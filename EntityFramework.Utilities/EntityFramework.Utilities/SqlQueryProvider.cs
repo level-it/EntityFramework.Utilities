@@ -83,9 +83,9 @@ namespace EntityFramework.Utilities
         }
 
 
-        public void UpdateItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, UpdateSpecification<T> updateSpecification)
+        public void UpdateItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, UpdateSpecification<T> updateSpecification, SqlTransaction transaction = null)
         {
-            var tempTableName = "temp_" + tableName + "_" + DateTime.Now.Ticks;
+            var tempTableName = "temp_" + tableName + "_" + Guid.NewGuid();
             var columnsToUpdate = updateSpecification.Properties.Select(p => p.GetPropertyName()).ToDictionary(x => x);
             var filtered = properties.Where(p => columnsToUpdate.ContainsKey(p.NameOnObject) || p.IsPrimaryKey).ToList();
             var columns = filtered.Select(c => "[" + c.NameInDatabase + "] " + c.DataType);
@@ -117,7 +117,7 @@ namespace EntityFramework.Utilities
             using (var dCommand = new SqlCommand(string.Format("DROP table {0}.[{1}]", schema, tempTableName), con))
             {
                 createCommand.ExecuteNonQuery();
-                InsertItems(items, schema, tempTableName, filtered, storeConnection, batchSize);
+                InsertItems(items, schema, tempTableName, filtered, storeConnection, batchSize, transaction);
                 mCommand.ExecuteNonQuery();
                 dCommand.ExecuteNonQuery();
             }
