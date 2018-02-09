@@ -127,12 +127,11 @@ namespace EntityFramework.Utilities
 				}
 
 				provider.InsertItems(items, tableMapping.Schema, tableMapping.TableName, properties, connectionToUse, batchSize, executeTimeout, copyOptions, transaction);
+				return;
 			}
-			else
-			{
-				Configuration.Log("Found provider: " + (provider?.GetType().Name ?? "[]") + " for " + connectionToUse.GetType().Name);
-				Fallbacks.DefaultInsertAll(_context, items);
-			}
+
+			Configuration.Log("Found provider: " + (provider?.GetType().Name ?? "[]") + " for " + connectionToUse.GetType().Name);
+			Fallbacks.DefaultInsertAll(_context, items);
 		}
 
 		public void UpdateAll<TEntity>(IEnumerable<TEntity> items, Action<UpdateSpecification<TEntity>> updateSpecification, DbConnection connection = null, int? batchSize = null, int? executeTimeout = null, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, SqlTransaction transaction = null) where TEntity : class, T
@@ -140,9 +139,7 @@ namespace EntityFramework.Utilities
 			var con = _context.Connection as EntityConnection;
 			if (con == null && connection == null)
 			{
-				Configuration.Log("No provider could be found because the Connection didn't implement System.Data.EntityClient.EntityConnection");
-				Fallbacks.DefaultInsertAll(_context, items);
-				return;
+				throw new InvalidOperationException("No provider supporting the Update operation for this datasource was found");
 			}
 
 			var connectionToUse = connection ?? con.StoreConnection;
@@ -169,12 +166,11 @@ namespace EntityFramework.Utilities
 				var spec = new UpdateSpecification<TEntity>();
 				updateSpecification(spec);
 				provider.UpdateItems(items, tableMapping.Schema, tableMapping.TableName, properties, connectionToUse, batchSize, spec, executeTimeout, copyOptions, transaction);
+				return;
 			}
-			else
-			{
-				Configuration.Log("Found provider: " + (provider?.GetType().Name ?? "[]") + " for " + connectionToUse.GetType().Name);
-				Fallbacks.DefaultInsertAll(_context, items);
-			}
+
+			Configuration.Log("Found provider: " + (provider?.GetType().Name ?? "[]") + " for " + connectionToUse.GetType().Name);
+			throw new InvalidOperationException("No provider supporting the Update operation for this datasource was found");
 		}
 
 		public IEFBatchOperationFiltered<T> Where(Expression<Func<T, bool>> predicate)
