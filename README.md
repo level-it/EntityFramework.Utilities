@@ -26,17 +26,13 @@ Here is a small extract from the performance section later in the document.
     delete all entities with a: 254ms
     delete all entities: 5634ms
 
-## Reporting bugs and feature requests
-
-You can do that by preferebly creating an issue here on GitHub or chat me up on twitter @MikaelEliasson
-
 ## Installing
 
 Right now this only works for DbContext. If anyone want to make a failing test or provide a sample project for any of the other variants it will probably be easy to fix.
 
 ### EF 6.1.3+
 
-Any package from 0.2.0 and up should work.
+Any package from 1.0.3 and up should work.
 
 Nuget package https://www.nuget.org/packages/RudeySH.EFUtilities/ 
 
@@ -98,7 +94,7 @@ var result = db.Contacts
 .ToList();
 ```
 
-VERY IMPORTANT: The plan was to add support for nested collections and projections but it seems like EF7 will have this problem fixed in the core so I dropped that functionality (it was hard to get right). What works right now is that you can include one or more child collections but only on the first level. 
+VERY IMPORTANT: The plan was to add support for nested collections and projections but it seemed like the next version of EF would have this problem fixed in the core so that functionality was dropped (it was hard to get right). What works right now is that you can include one or more child collections but only on the first level. 
 
 Also it's important to know that the queries are run AsNoTracking(). If you use this method you are after read performance so you shouldn't need the tracking. If you might need to update some of the entities I suggest you just attach them back to the context.
 
@@ -145,8 +141,6 @@ Allows you to insert many entities in a very performant way instead of adding th
             }
 ```
 
-On my dev machine that runs at around 500ms instead of 10s using the 'out of the box method'(Optimised by disabling change tracking and validation) or 90s with changetracking and validation. 
-
 SqlBulkCopy is used under the covers if you are running against SqlServer. If you are not running against SqlServer it will default to doing the normal inserts.
 
 #### Inheritance and Bulk insert
@@ -177,8 +171,6 @@ foreach (var item in commentsFromDb)
 }
 EFBatchOperation.For(db, db.Comments).UpdateAll(commentsFromDb, x => x.ColumnsToUpdate(c => c.Reads));
 ```
-
-On my dev machine that runs at around 153ms instead of 6s using the 'out of the box method'
 
 SqlBulkCopy is used under the covers if you are running against SqlServer. If you are not running against SqlServer it will default to doing the normal inserts.
 
@@ -242,7 +234,7 @@ These methods are all about performance. Measuring performance should always be 
 
 The standard iteration is optimized in the sense that AutoDetectChangedEnabled = false; It would not be reasonable to delete/insert 25000 entities otherwise.
 
-Here is a test run with EntitityFramework.Utilities on my laptop doing operations on a really simple object Comment(Text:string,Date:DateTime,Id:int,Reads:int)
+Here is a test run with EntitityFramework.Utilities on a laptop doing operations on a really simple object Comment(Text:string,Date:DateTime,Id:int,Reads:int)
 
                Batch iteration with 25 entities
                Insert entities: 23ms
@@ -281,5 +273,5 @@ Here is a test run with EntitityFramework.Utilities on my laptop doing operation
                delete all entities: 292ms
 
 
-This is on my ultrabook. Here I don't compare to anything so it's just to give you some overview about what to expect. Note that in the batchmode around 100k entities/sec are added when reaching larger datasets. 
+This is on an ultrabook. Here I don't compare to anything so it's just to give you some overview about what to expect. Note that in the batchmode around 100k entities/sec are added when reaching larger datasets. 
 
