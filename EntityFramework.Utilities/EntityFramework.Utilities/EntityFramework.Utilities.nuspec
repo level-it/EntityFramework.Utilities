@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://raw.githubusercontent.com/RudeySH/EntityFramework.Utilities/master/EntityFramework.Utilities/LICENSE.txt</licenseUrl>
+    <projectUrl>https://github.com/RudeySH/EntityFramework.Utilities</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <copyright>Copyright 2018</copyright>
+    <tags>Batch, EF, SQL, BulkCopy, SQLBulkCopy, Bulk, Copy, Entity, Framework, EntityFramework, Utilities, EFUtilities, EntityFramework.Utilities, Rudey, RudeySH</tags>
+  </metadata>
+</package>
