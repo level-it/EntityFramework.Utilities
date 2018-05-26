@@ -1,6 +1,6 @@
-## The goal
+This a fork that adds various features and bugfixes to the original EFUtilities by Mikael Eliasson. Below is a modified version of the original README.md.
 
-[![Join the chat at https://gitter.im/MikaelEliasson/EntityFramework.Utilities](https://badges.gitter.im/MikaelEliasson/EntityFramework.Utilities.svg)](https://gitter.im/MikaelEliasson/EntityFramework.Utilities?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+## The goal
 
 Performance! EF is quite fast in many cases nowdays but doing CUD over many entities is slooooow. This is a solution for that.  
 
@@ -8,7 +8,7 @@ EntityFramework.Utilities provides some batch operations for using EF that the E
 
 Right now it's mostly to targeted at EF on SQL server but adding providers should be simple. 
 
-###Example
+### Example
 
 Here is a small extract from the performance section later in the document.
 
@@ -34,25 +34,11 @@ You can do that by preferebly creating an issue here on GitHub or chat me up on 
 
 Right now this only works for DbContext. If anyone want to make a failing test or provide a sample project for any of the other variants it will probably be easy to fix.
 
-### EF 4-5
-
-You need to manually select any of the O.1.xxx packages as the later packages are for EF V6.
-
-Nuget package https://www.nuget.org/packages/EFUtilities/ 
-
-### EF 6
-
-Any package from 0.2.0 and < 1.0.0
-
-Newer version use the newer metadata apis and cannot be used
-
-Nuget package https://www.nuget.org/packages/EFUtilities/ 
-
 ### EF 6.1.3+
 
 Any package from 0.2.0 and up should work.
 
-Nuget package https://www.nuget.org/packages/EFUtilities/ 
+Nuget package https://www.nuget.org/packages/RudeySH.EFUtilities/ 
 
 ## Utility methods 
 
@@ -91,7 +77,7 @@ REQUIRES: using EntityFramework.Utilities;
 
 The standard EF Include is really really slow to use. They reason is that it cross joins the child records against the parent which means you load a significant amount of duplicate data. This means more data to transfer, more data to parse, more memory etc etc. 
 
-Include EFU on the other hand runs two parallel queries and stitch the data toghether in memory. For more information on the problem and numbers see http://mikee.se/Archive.aspx/Details/entity_framework_pitfalls,_include_20140101
+Include EFU on the other hand runs two parallel queries and stitch the data toghether in memory.
 
 A very basic query:
 
@@ -132,7 +118,7 @@ These methods all work outside the normal EF pipeline and are located on the EFB
 
 EFUtilities supports some simple global settings. You can enable logging and control if default fallbacks should be used and add new Providers.
 
-See https://github.com/MikaelEliasson/EntityFramework.Utilities/blob/496a1a8e8d13c96cb5bb15a4dde9f839f312e9c7/EntityFramework.Utilities/EntityFramework.Utilities/Configuration.cs for the options
+See https://github.com/RudeySH/EntityFramework.Utilities/blob/master/EntityFramework.Utilities/EntityFramework.Utilities/Configuration.cs for the options
 
 ### Delete by query
 
