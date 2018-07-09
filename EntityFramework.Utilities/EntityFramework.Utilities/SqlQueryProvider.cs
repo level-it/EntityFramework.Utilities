@@ -16,7 +16,7 @@ namespace EntityFramework.Utilities
 
 		public string GetDeleteQuery(QueryInformation queryInfo)
 		{
-			return $"DELETE FROM [{queryInfo.Schema}].[{queryInfo.Table}] {queryInfo.WhereSql}";
+			return $"DELETE {queryInfo.TopExpression} FROM [{queryInfo.Schema}].[{queryInfo.Table}] {queryInfo.WhereSql}";
 		}
 
 		public string GetUpdateQuery(QueryInformation predicateQueryInfo, QueryInformation modificationQueryInfo)
