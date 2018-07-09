@@ -14,6 +14,9 @@ namespace EntityFramework.Utilities
 		public bool CanInsert => true;
 		public bool CanBulkUpdate => true;
 
+		private static readonly Regex FromRegex = new Regex(@"FROM \[([^\]]+)\]\.\[([^\]]+)\] AS (\[[^\]]+\])", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+		private static readonly Regex UpdateRegex = new Regex(@"(\[[^\]]+\])[^=]+=(.+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
 		public string GetDeleteQuery(QueryInformation queryInfo)
 		{
 			return $"DELETE {queryInfo.TopExpression} FROM [{queryInfo.Schema}].[{queryInfo.Table}] {queryInfo.WhereSql}";
@@ -25,8 +28,7 @@ namespace EntityFramework.Utilities
 			var indexOfAnd = msql.IndexOf("AND", StringComparison.Ordinal);
 			var update = indexOfAnd == -1 ? msql : msql.Substring(0, indexOfAnd).Trim();
 
-			var updateRegex = new Regex(@"(\[[^\]]+\])[^=]+=(.+)", RegexOptions.IgnoreCase);
-			var match = updateRegex.Match(update);
+			var match = UpdateRegex.Match(update);
 			string updateSql;
 
 			if (match.Success)
@@ -137,12 +139,10 @@ namespace EntityFramework.Utilities
 
 		public QueryInformation GetQueryInformation<T>(System.Data.Entity.Core.Objects.ObjectQuery<T> query)
 		{
-			var fromRegex = new Regex(@"FROM \[([^\]]+)\]\.\[([^\]]+)\] AS (\[[^\]]+\])", RegexOptions.IgnoreCase);
-
 			var queryInfo = new QueryInformation();
 
 			var str = query.ToTraceString();
-			var match = fromRegex.Match(str);
+			var match = FromRegex.Match(str);
 			queryInfo.Schema = match.Groups[1].Value;
 			queryInfo.Table = match.Groups[2].Value;
 			queryInfo.Alias = match.Groups[3].Value;
