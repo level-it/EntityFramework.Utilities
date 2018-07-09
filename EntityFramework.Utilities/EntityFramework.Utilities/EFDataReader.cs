@@ -38,7 +38,7 @@ namespace EntityFramework.Utilities
 				foreach (var part in parts.Skip(1))
 				{
 					var i = temp.PropertyType.GetProperty(part);
-					var g =  i.GetGetMethod();
+					var g = i.GetGetMethod();
 
 					var old = getter;
 					getter = x => g.Invoke(old(x), null);

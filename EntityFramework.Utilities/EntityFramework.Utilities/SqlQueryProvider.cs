@@ -100,8 +100,8 @@ namespace EntityFramework.Utilities
 
 			var setters = string.Join(",", filtered.Where(c => !c.IsPrimaryKey).Select(c => "ORIG.[" + c.NameInDatabase + "] = TEMP.[" + c.NameInDatabase + "]"));
 			var pks = properties.Where(p => p.IsPrimaryKey).Select(x => "ORIG.[" + x.NameInDatabase + "] = TEMP.[" + x.NameInDatabase + "]");
-			var filter = string.Join(" and ",  pks);
-			var mergeCommand =  string.Format(@"UPDATE ORIG
+			var filter = string.Join(" and ", pks);
+			var mergeCommand = string.Format(@"UPDATE ORIG
 				SET
 					{4}
 				FROM

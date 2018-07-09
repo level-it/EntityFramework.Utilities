@@ -1,4 +1,4 @@
-﻿using System.Data.Entity;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using Tests.Models;
 
@@ -29,7 +29,7 @@ namespace Tests.FakeDomain
 				.Map<Person>(m => m.Requires("Type").HasValue("Person"))
 				.Map<Contact>(m => m.Requires("Type").HasValue("Contact"));
 
-			modelBuilder.Entity<MultiPkObject>().HasKey(x => new { PK1 = x.Pk1, PK2 = x.Pk2 });
+			modelBuilder.Entity<MultiPkObject>().HasKey(x => new { x.Pk1, x.Pk2 });
 
 			modelBuilder.Entity<BlogPost>().Property(x => x.ShortTitle).HasMaxLength(100);
 

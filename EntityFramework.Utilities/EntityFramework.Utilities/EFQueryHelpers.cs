@@ -183,7 +183,7 @@ namespace EntityFramework.Utilities
 
 		private static IQueryable<TChild> SortQuery<TChild>(IQueryable<TChild> query, MethodCallExpression item, string method)
 		{
-			var body = (LambdaExpression) item.Arguments[1];
+			var body = (LambdaExpression)item.Arguments[1];
 
 			if (body != null)
 			{
