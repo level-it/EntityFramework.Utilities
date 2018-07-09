@@ -6,6 +6,7 @@ using System.Data.Entity.Core.EntityClient;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -52,6 +53,8 @@ namespace EntityFramework.Utilities
 	public interface IEFBatchOperationFiltered<T>
 	{
 		int Delete();
+		int DeleteTop(int numberOfRows);
+		int DeleteTopPercent(double numberOfRows);
 		int Update<TP>(Expression<Func<T, TP>> prop, Expression<Func<T, TP>> modifier);
 	}
 
@@ -72,6 +75,7 @@ namespace EntityFramework.Utilities
 		private readonly ObjectContext _context;
 		private readonly DbContext _dbContext;
 		private Expression<Func<T, bool>> _predicate;
+		private string _deleteTopExpression;
 
 		private EFBatchOperation(TContext context)
 		{
@@ -179,6 +183,18 @@ namespace EntityFramework.Utilities
 			return this;
 		}
 
+		public int DeleteTop(int numberOfRows)
+		{
+			_deleteTopExpression = $"TOP ({numberOfRows})";
+			return Delete();
+		}
+
+		public int DeleteTopPercent(double percentOfRows)
+		{
+			_deleteTopExpression = $"TOP ({percentOfRows.ToString(CultureInfo.InvariantCulture)}) PERCENT";
+			return Delete();
+		}
+
 		public int Delete()
 		{
 			if (!(_context.Connection is EntityConnection con))
@@ -193,6 +209,7 @@ namespace EntityFramework.Utilities
 				var set = _context.CreateObjectSet<T>();
 				var query = (ObjectQuery<T>)set.Where(_predicate);
 				var queryInformation = provider.GetQueryInformation(query);
+				queryInformation.TopExpression = _deleteTopExpression;
 
 				var delete = provider.GetDeleteQuery(queryInformation);
 				var parameters = query.Parameters.Select(p => new SqlParameter { Value = p.Value, ParameterName = p.Name }).ToArray<object>();

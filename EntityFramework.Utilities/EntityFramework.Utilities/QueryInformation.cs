@@ -6,5 +6,6 @@
 		public string Table { get; set; }
 		public string Alias { get; set; }
 		public string WhereSql { get; set; }
+		public string TopExpression { get; set; }
 	}
 }
