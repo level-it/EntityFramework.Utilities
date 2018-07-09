@@ -178,18 +178,23 @@ namespace EntityFramework.Utilities
 
 				if (mapping.EntityTypeMappings.Any(m => m.IsHierarchyMapping))
 				{
-					var withConditions = mapping.EntityTypeMappings.Where(m => m.Fragments[0].Conditions.Any()).ToList();
-					tableMapping.TphConfiguration = new TphConfiguration
+					var withConditions = mapping.EntityTypeMappings.Where(m => m.Fragments[0].Conditions.Any()).ToArray();
+
+					if (withConditions.Length != 0)
 					{
-						ColumnName = withConditions.First().Fragments[0].Conditions[0].Column.Name,
-						Mappings = new Dictionary<Type, string>()
-					};
+						tableMapping.TphConfiguration = new TphConfiguration
+						{
+							ColumnName = withConditions.First().Fragments[0].Conditions[0].Column.Name,
+							Mappings = new Dictionary<Type, string>()
+						};
+					}
+
 					foreach (var item in withConditions)
 					{
 						tableMapping.TphConfiguration.Mappings.Add(
 							GetClr(item.Fragments[0]),
 							((ValueConditionMapping)item.Fragments[0].Conditions[0]).Value.ToString()
-							);
+						);
 					}
 				}
 
