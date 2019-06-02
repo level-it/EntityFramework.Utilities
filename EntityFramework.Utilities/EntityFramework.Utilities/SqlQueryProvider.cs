@@ -49,7 +49,7 @@ namespace EntityFramework.Utilities
 				$"UPDATE [{predicateQueryInfo.Schema}].[{predicateQueryInfo.Table}] SET {updateSql} {predicateQueryInfo.WhereSql}";
 		}
 
-		public void InsertItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, int? executeTimeout, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, DbTransaction transaction = null)
+		public void InsertItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, int? executeTimeout, SqlBulkCopyOptions copyOptions, DbTransaction transaction)
 		{
 			using (var reader = new EFDataReader<T>(items, properties))
 			{
@@ -85,7 +85,7 @@ namespace EntityFramework.Utilities
 			}
 		}
 
-		public void UpdateItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, UpdateSpecification<T> updateSpecification, int? executeTimeout = null, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, DbTransaction transaction = null)
+		public void UpdateItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, UpdateSpecification<T> updateSpecification, int? executeTimeout, SqlBulkCopyOptions copyOptions, DbTransaction transaction, DbConnection insertConnection)
 		{
 			var tempTableName = "#" + Guid.NewGuid().ToString("N");
 			var columnsToUpdate = updateSpecification.Properties.Select(p => p.GetPropertyName()).ToDictionary(x => x);
@@ -126,7 +126,7 @@ namespace EntityFramework.Utilities
 				dCommand.CommandTimeout = executeTimeout ?? 600;
 
 				createCommand.ExecuteNonQuery();
-				InsertItems(items, schema, tempTableName, filtered, storeConnection, batchSize, executeTimeout, copyOptions, transaction);
+				InsertItems(items, schema, tempTableName, filtered, insertConnection, batchSize, executeTimeout, copyOptions, transaction);
 				mCommand.ExecuteNonQuery();
 				dCommand.ExecuteNonQuery();
 			}
