@@ -125,6 +125,10 @@ namespace EntityFramework.Utilities
 				mCommand.CommandTimeout = executeTimeout ?? 600;
 				dCommand.CommandTimeout = executeTimeout ?? 600;
 
+				createCommand.Transaction = transaction;
+				mCommand.Transaction = transaction;
+				dCommand.Transaction = transaction;
+
 				createCommand.ExecuteNonQuery();
 				InsertItems(items, schema, tempTableName, filtered, insertConnection, batchSize, executeTimeout, copyOptions, transaction);
 				mCommand.ExecuteNonQuery();
