@@ -93,7 +93,7 @@ namespace EntityFramework.Utilities
 			var columns = filtered.Select(c => "[" + c.NameInDatabase + "] " + c.DataType);
 			var pkConstraint = string.Join(", ", properties.Where(p => p.IsPrimaryKey).Select(c => "[" + c.NameInDatabase + "]"));
 
-			var str = $"CREATE TABLE {schema}.[{tempTableName}]({string.Join(", ", columns)}, PRIMARY KEY ({pkConstraint}))";
+			var str = $"CREATE TABLE [{schema}].[{tempTableName}]({string.Join(", ", columns)}, PRIMARY KEY ({pkConstraint}))";
 
 			if (storeConnection.State != System.Data.ConnectionState.Open)
 			{
@@ -110,7 +110,7 @@ namespace EntityFramework.Utilities
 					[{0}].[{1}] ORIG
 				INNER JOIN
 					 [{0}].[{2}] TEMP
-				ON 
+				ON
 					{3}", schema, tableName, tempTableName, filter, setters);
 
 			using (var createCommand = storeConnection.CreateCommand())
@@ -119,7 +119,7 @@ namespace EntityFramework.Utilities
 			{
 				createCommand.CommandText = str;
 				mCommand.CommandText = mergeCommand;
-				dCommand.CommandText = $"DROP table {schema}.[{tempTableName}]";
+				dCommand.CommandText = $"DROP table [{schema}].[{tempTableName}]";
 
 				createCommand.CommandTimeout = executeTimeout ?? 600;
 				mCommand.CommandTimeout = executeTimeout ?? 600;
