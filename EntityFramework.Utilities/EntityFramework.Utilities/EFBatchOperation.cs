@@ -55,7 +55,7 @@ namespace EntityFramework.Utilities
 		int Delete();
 		int DeleteTop(int numberOfRows);
 		int DeleteTopPercent(double numberOfRows);
-		int Update<TP>(Expression<Func<T, TP>> prop, Expression<Func<T, TP>> modifier);
+		int Update<TP>(Expression<Func<T, TP>> prop, Expression<Func<T, TP>> modifier, DbConnection connection = null);
 	}
 
 	public static class EFBatchOperation
@@ -226,15 +226,17 @@ namespace EntityFramework.Utilities
 			return Fallbacks.DefaultDelete(_context, _predicate);
 		}
 
-		public int Update<TP>(Expression<Func<T, TP>> prop, Expression<Func<T, TP>> modifier)
+		public int Update<TP>(Expression<Func<T, TP>> prop, Expression<Func<T, TP>> modifier, DbConnection connection = null)
 		{
-			if (!(_context.Connection is EntityConnection con))
+			var con = _context.Connection as EntityConnection;
+			if (con == null && connection == null)
 			{
 				Configuration.Log("No provider could be found because the Connection didn't implement System.Data.EntityClient.EntityConnection");
 				return Fallbacks.DefaultUpdate(_context, _predicate, prop, modifier);
 			}
+			var connectionToUse = connection ?? con.StoreConnection;
 
-			var provider = Configuration.Providers.FirstOrDefault(p => p.CanHandle(con.StoreConnection));
+			var provider = Configuration.Providers.FirstOrDefault(p => p.CanHandle(connectionToUse));
 			if (provider != null && provider.CanUpdate)
 			{
 				var set = _context.CreateObjectSet<T>();
@@ -257,7 +259,7 @@ namespace EntityFramework.Utilities
 				return _context.ExecuteStoreCommand(update, parameters);
 			}
 
-			Configuration.Log("Found provider: " + (provider?.GetType().Name ?? "[]") + " for " + con.StoreConnection.GetType().Name);
+			Configuration.Log("Found provider: " + (provider?.GetType().Name ?? "[]") + " for " + connectionToUse.GetType().Name);
 			return Fallbacks.DefaultUpdate(_context, _predicate, prop, modifier);
 		}
 	}
