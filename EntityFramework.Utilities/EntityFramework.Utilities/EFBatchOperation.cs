@@ -52,9 +52,9 @@ namespace EntityFramework.Utilities
 
 	public interface IEFBatchOperationFiltered<T>
 	{
-		int Delete();
-		int DeleteTop(int numberOfRows);
-		int DeleteTopPercent(double numberOfRows);
+		int Delete(DbConnection connection = null);
+		int DeleteTop(int numberOfRows, DbConnection connection = null);
+		int DeleteTopPercent(double numberOfRows, DbConnection connection = null);
 		int Update<TP>(Expression<Func<T, TP>> prop, Expression<Func<T, TP>> modifier, DbConnection connection = null);
 	}
 
@@ -189,27 +189,29 @@ namespace EntityFramework.Utilities
 			return this;
 		}
 
-		public int DeleteTop(int numberOfRows)
+		public int DeleteTop(int numberOfRows, DbConnection connection = null)
 		{
 			_deleteTopExpression = $"TOP ({numberOfRows})";
-			return Delete();
+			return Delete(connection);
 		}
 
-		public int DeleteTopPercent(double percentOfRows)
+		public int DeleteTopPercent(double percentOfRows, DbConnection connection = null)
 		{
 			_deleteTopExpression = $"TOP ({percentOfRows.ToString(CultureInfo.InvariantCulture)}) PERCENT";
-			return Delete();
+			return Delete(connection);
 		}
 
-		public int Delete()
+		public int Delete(DbConnection connection = null)
 		{
-			if (!(_context.Connection is EntityConnection con))
+			var con = _context.Connection as EntityConnection;
+			if (con == null && connection == null)
 			{
 				Configuration.Log("No provider could be found because the Connection didn't implement System.Data.EntityClient.EntityConnection");
 				return Fallbacks.DefaultDelete(_context, _predicate);
 			}
+			var connectionToUse = connection ?? con.StoreConnection;
 
-			var provider = Configuration.Providers.FirstOrDefault(p => p.CanHandle(con.StoreConnection));
+			var provider = Configuration.Providers.FirstOrDefault(p => p.CanHandle(connectionToUse));
 			if (provider != null && provider.CanDelete)
 			{
 				var set = _context.CreateObjectSet<T>();
@@ -222,7 +224,7 @@ namespace EntityFramework.Utilities
 				return _context.ExecuteStoreCommand(delete, parameters);
 			}
 
-			Configuration.Log("Found provider: " + (provider?.GetType().Name ?? "[]") + " for " + con.StoreConnection.GetType().Name);
+			Configuration.Log("Found provider: " + (provider?.GetType().Name ?? "[]") + " for " + connectionToUse.GetType().Name);
 			return Fallbacks.DefaultDelete(_context, _predicate);
 		}
 
