@@ -168,7 +168,8 @@ namespace EntityFramework.Utilities
 					{
 						NameInDatabase = p.ColumnName,
 						NameOnObject = p.PropertyName,
-						DataType = p.DataTypeFull,
+						DataType = p.DataType,
+						DataTypeFull = p.DataTypeFull,
 						IsPrimaryKey = p.IsPrimaryKey
 					}).ToList();
 

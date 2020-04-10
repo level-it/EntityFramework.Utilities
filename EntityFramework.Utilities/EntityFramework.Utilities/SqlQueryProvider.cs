@@ -90,7 +90,7 @@ namespace EntityFramework.Utilities
 			var tempTableName = "#" + Guid.NewGuid().ToString("N");
 			var columnsToUpdate = updateSpecification.Properties.Select(p => p.GetPropertyName()).ToDictionary(x => x);
 			var filtered = properties.Where(p => columnsToUpdate.ContainsKey(p.NameOnObject) || p.IsPrimaryKey).ToList();
-			var columns = filtered.Select(c => "[" + c.NameInDatabase + "] " + c.DataType);
+			var columns = filtered.Select(c => "[" + c.NameInDatabase + "] " + c.DataTypeFull + (c.DataType.EndsWith("char") ? " COLLATE DATABASE_DEFAULT" : null));
 			var pkConstraint = string.Join(", ", properties.Where(p => p.IsPrimaryKey).Select(c => "[" + c.NameInDatabase + "]"));
 
 			var str = $"CREATE TABLE [{schema}].[{tempTableName}]({string.Join(", ", columns)}, PRIMARY KEY ({pkConstraint}))";

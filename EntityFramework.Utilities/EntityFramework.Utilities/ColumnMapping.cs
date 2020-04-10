@@ -9,6 +9,7 @@ namespace EntityFramework.Utilities
 		public string StaticValue { get; set; }
 		public string NameInDatabase { get; set; }
 		public string DataType { get; set; }
+		public string DataTypeFull { get; set; }
 		public bool IsPrimaryKey { get; set; }
 	}
 }
