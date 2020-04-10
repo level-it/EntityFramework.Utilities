@@ -37,8 +37,10 @@ namespace EntityFramework.Utilities
 				temp = (temp as UnaryExpression).Operand;
 			}
 
-			var member = temp as MemberExpression;
-			return member?.Member.Name;
+			// Use ToString to deal with nested property names, remove prefix using Substring
+			var name = ((MemberExpression)temp).ToString();
+			var index = name.IndexOf('.');
+			return name.Substring(index + 1);
 		}
 
 		//http://stackoverflow.com/a/2824409/507279

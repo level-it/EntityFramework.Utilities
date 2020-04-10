@@ -1,3 +1,4 @@
+using System;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using Tests.Models;
@@ -17,6 +18,7 @@ namespace Tests.FakeDomain
 		public DbSet<Comment> Comments { get; set; }
 		public DbSet<NumericTestObject> NumericTestsObjects { get; set; }
 		public DbSet<MultiPkObject> MultiPkObjects { get; set; }
+		public DbSet<ObjectWithComplexType> ObjectsWithComplexType { get; set; }
 
 		protected override void OnModelCreating(DbModelBuilder modelBuilder)
 		{
@@ -51,8 +53,11 @@ namespace Tests.FakeDomain
 			return ctx;
 		}
 
+		[Obsolete]
 		public static Context SqlCe()
 		{
+			return Sql();
+
 			Database.SetInitializer<Context>(null);
 			var def = Database.DefaultConnectionFactory;
 			Database.DefaultConnectionFactory = new SqlCeConnectionFactory("System.Data.SqlServerCe.4.0");

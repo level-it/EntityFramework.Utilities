@@ -36,6 +36,44 @@ namespace Tests
 		}
 
 		[TestMethod]
+		public void UpdateBulk_CanUpdateComplexType()
+		{
+			using (var db = Context.Sql())
+			{
+				if (db.Database.Exists())
+				{
+					db.Database.ForceDelete();
+				}
+				db.Database.Create();
+
+				var list = new List<ObjectWithComplexType>
+				{
+					new ObjectWithComplexType()
+				};
+
+				EFBatchOperation.For(db, db.ObjectsWithComplexType).InsertAll(list);
+			}
+
+			using (var db = Context.Sql())
+			{
+				var items = db.ObjectsWithComplexType.ToList();
+				foreach (var item in items)
+				{
+					item.ComplexType.Name = "Test1";
+					item.ComplexType.Another.Name = "Test2";
+				}
+				EFBatchOperation.For(db, db.ObjectsWithComplexType).UpdateAll(items, spec => spec.ColumnsToUpdate(p => p.ComplexType.Name, p => p.ComplexType.Another.Name));
+			}
+
+			using (var db = Context.Sql())
+			{
+				var item = db.ObjectsWithComplexType.First();
+				Assert.AreEqual("Test1", item.ComplexType.Name);
+				Assert.AreEqual("Test2", item.ComplexType.Another.Name);
+			}
+		}
+
+		[TestMethod]
 		public void UpdateBulk_CanUpdateTPH()
 		{
 			using (var db = Context.Sql())
