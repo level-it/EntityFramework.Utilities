@@ -53,11 +53,8 @@ namespace Tests.FakeDomain
 			return ctx;
 		}
 
-		[Obsolete]
 		public static Context SqlCe()
 		{
-			return Sql();
-
 			Database.SetInitializer<Context>(null);
 			var def = Database.DefaultConnectionFactory;
 			Database.DefaultConnectionFactory = new SqlCeConnectionFactory("System.Data.SqlServerCe.4.0");
