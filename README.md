@@ -160,7 +160,7 @@ One of the arguments is a connection that you can supply.
 
 Works just like InsertAll but for updates instead. You can chose exactly which columns to update too.
 
-An example where I load all items from the database and update them with a random number of reads-
+An example where I load all items from the database and update them with a random number of reads and writes-
 
 ```c#
 var commentsFromDb = db.Comments.AsNoTracking().ToList();
@@ -168,8 +168,9 @@ var rand = new Random();
 foreach (var item in commentsFromDb)
 {
     item.Reads = rand.Next(0, 9999999);
+    item.Writes = rand.Next(0, 9999999);
 }
-EFBatchOperation.For(db, db.Comments).UpdateAll(commentsFromDb, x => x.ColumnsToUpdate(c => c.Reads));
+EFBatchOperation.For(db, db.Comments).UpdateAll(commentsFromDb, x => x.ColumnsToUpdate(c => c.Reads, c => c.Writes));
 ```
 
 SqlBulkCopy is used under the covers if you are running against SqlServer. If you are not running against SqlServer it will default to doing the normal inserts.
