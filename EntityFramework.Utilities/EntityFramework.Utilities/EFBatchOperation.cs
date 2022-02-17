@@ -1,4 +1,4 @@
-﻿// Copyright © 2009-2021 Level IT
+﻿// Copyright © 2009-2022 Level IT
 // All rights reserved as Copyright owner.
 //
 // You may not use this file unless explicitly stated by Level IT.
@@ -89,6 +89,7 @@ namespace EntityFramework.Utilities
 	{
 		private readonly ObjectContext _context;
 		private readonly DbContext _dbContext;
+		private readonly IDbSet<T> _dbSet;
 		private Expression<Func<T, bool>> _predicate;
 		private string _deleteTopExpression;
 
@@ -97,12 +98,16 @@ namespace EntityFramework.Utilities
 			_dbContext = context;
 			_context = (context as IObjectContextAdapter).ObjectContext;
 		}
+		private EFBatchOperation(TContext context, IDbSet<T> dbSet) : this(context)
+		{
+			_dbSet = dbSet;
+		}
 
-		public static IEFBatchOperationBase<T> For<TContext, T>(TContext context, IDbSet<T> set)
+		public static IEFBatchOperationBase<T> For<TContext, T>(TContext context, IDbSet<T> dbSet)
 			where TContext : DbContext
 			where T : class
 		{
-			return new EFBatchOperation<TContext, T>(context);
+			return new EFBatchOperation<TContext, T>(context, dbSet);
 		}
 
 		/// <summary>
@@ -159,7 +164,8 @@ namespace EntityFramework.Utilities
 		/// <param name="items">The items to insert</param>
 		/// <param name="connection">The DbConnection to use for the insert. Only needed when for example a profiler wraps the connection. Then you need to provide a connection of the type the provider use.</param>
 		/// <param name="batchSize">The size of each batch. Default depends on the provider. SqlProvider uses 15000 as default</param>
-		public IEnumerable<TEntity> InsertAllIds<TEntity>(IEnumerable<TEntity> items, DbConnection connection = null, int? batchSize = null, int? executeTimeout = null, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, DbTransaction transaction = null) where TEntity : class, T
+		public IEnumerable<TEntity> InsertAllIds<TEntity>(IEnumerable<TEntity> items, DbConnection connection = null, int? batchSize = null, int? executeTimeout = null, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, DbTransaction transaction = null)
+			where TEntity : class, T
 		{
 			var con = _context.Connection as EntityConnection;
 			if (con == null && connection == null)
@@ -193,7 +199,7 @@ namespace EntityFramework.Utilities
 					});
 				}
 
-				return provider.InsertItemsIds(items, tableMapping.Schema, tableMapping.TableName, properties, connectionToUse, batchSize, executeTimeout, copyOptions, transaction, _dbContext);
+				return provider.InsertItemsIds(items, tableMapping.Schema, tableMapping.TableName, properties, connectionToUse, batchSize, executeTimeout, copyOptions, transaction, _dbSet).Select(x => (TEntity)x);
 			}
 
 			Configuration.Log("Found provider: " + (provider?.GetType().Name ?? "[]") + " for " + connectionToUse.GetType().Name);

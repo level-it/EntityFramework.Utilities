@@ -1,4 +1,4 @@
-﻿// Copyright © 2009-2021 Level IT
+﻿// Copyright © 2009-2022 Level IT
 // All rights reserved as Copyright owner.
 //
 // You may not use this file unless explicitly stated by Level IT.
@@ -91,7 +91,8 @@ namespace EntityFramework.Utilities
 			}
 		}
 
-		public IEnumerable<T> InsertItemsIds<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, int? executeTimeout, SqlBulkCopyOptions copyOptions, DbTransaction transaction, DbContext dbContext)
+		public IEnumerable<T> InsertItemsIds<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, int? executeTimeout, SqlBulkCopyOptions copyOptions, DbTransaction transaction, IDbSet<T> dbSet)
+			where T : class
 		{
 			//Create temp table
 			var tempTableName = "temp_" + tableName + "_" + DateTime.Now.Ticks;
@@ -119,7 +120,8 @@ namespace EntityFramework.Utilities
 			var results = new List<T>();
 			try
 			{
-				results = dbContext.Database.SqlQuery<T>(mergeCommand).ToList();
+				results = ((DbSet<T>)dbSet).SqlQuery(mergeCommand).ToList();
+				//results = dbContext.Database.SqlQuery<T>(mergeCommand).ToList();
 			}
 			catch (Exception ex)
 			{

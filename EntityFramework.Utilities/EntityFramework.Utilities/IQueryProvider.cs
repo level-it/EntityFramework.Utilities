@@ -1,4 +1,4 @@
-﻿// Copyright © 2009-2021 Level IT
+﻿// Copyright © 2009-2022 Level IT
 // All rights reserved as Copyright owner.
 //
 // You may not use this file unless explicitly stated by Level IT.
@@ -20,7 +20,7 @@ namespace EntityFramework.Utilities
 		string GetDeleteQuery(QueryInformation queryInformation);
 		string GetUpdateQuery(QueryInformation predicateQueryInfo, QueryInformation modificationQueryInfo);
 		void InsertItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, int? executeTimeout, SqlBulkCopyOptions copyOptions, DbTransaction transaction);
-		IEnumerable<T> InsertItemsIds<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection connectionToUse, int? batchSize, int? executeTimeout, SqlBulkCopyOptions copyOptions, DbTransaction transaction, DbContext dbContext);
+		IEnumerable<T> InsertItemsIds<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection connectionToUse, int? batchSize, int? executeTimeout, SqlBulkCopyOptions copyOptions, DbTransaction transaction, IDbSet<T> dbSet) where T : class;
 
 		void UpdateItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, UpdateSpecification<T> updateSpecification, int? executeTimeout, SqlBulkCopyOptions copyOptions, DbTransaction transaction, DbConnection insertConnection);
 
