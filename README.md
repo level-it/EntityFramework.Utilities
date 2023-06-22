@@ -40,7 +40,7 @@ Right now this only works for DbContext. If anyone want to make a failing test o
 
 Any package from 1.0.3 and up should work.
 
-Nuget package https://www.nuget.org/packages/RudeySH.EFUtilities/ 
+Nuget package https://www.nuget.org/packages/LIT.EFUtilities/ 
 
 ## Utility methods 
 
