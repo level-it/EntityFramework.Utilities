@@ -1,3 +1,9 @@
+
+## Level IT contribution
+This fork of [RudeySH EntityFramework.Utilities](https://github.com/RudeySH/EntityFramework.Utilities) adds a way to retrieve the ids of new rows when performing a batch insert. This forks was only tested in our use cases and we don't guarantee that it is bug free.
+
+# Orignal README
+
 This a fork that adds various features and bugfixes to the original EFUtilities by Mikael Eliasson. Below is a modified version of the original README.md.
 
 ## The goal
