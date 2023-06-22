@@ -1,4 +1,9 @@
-﻿using System;
+﻿// Copyright © 2009-2021 Level IT
+// All rights reserved as Copyright owner.
+//
+// You may not use this file unless explicitly stated by Level IT.
+
+using System;
 using System.Collections.Generic;
 using System.Data.Entity.Core.Objects;
 using System.Linq;
@@ -22,6 +27,24 @@ namespace EntityFramework.Utilities
 			}
 
 			context.SaveChanges();
+		}
+
+		internal IEnumerable<T> DefaultInsertAllIds<T>(ObjectContext context, IEnumerable<T> items) where T : class
+		{
+			if (Configuration.DisableDefaultFallback)
+			{
+				throw new InvalidOperationException("No provider supporting the InsertAll operation for this datasource was found");
+			}
+
+			var set = context.CreateObjectSet<T>();
+			var rtn = new List<T>();
+			foreach (var item in items)
+			{
+				set.AddObject(item);
+			}
+
+			context.SaveChanges();
+			return rtn;
 		}
 
 		internal static int DefaultDelete<T>(ObjectContext context, System.Linq.Expressions.Expression<Func<T, bool>> predicate) where T : class

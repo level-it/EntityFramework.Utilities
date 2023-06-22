@@ -1,6 +1,12 @@
-﻿using System;
+﻿// Copyright © 2009-2022 Level IT
+// All rights reserved as Copyright owner.
+//
+// You may not use this file unless explicitly stated by Level IT.
+
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -84,6 +90,51 @@ namespace EntityFramework.Utilities
 				}
 			}
 		}
+
+		public IEnumerable<T> InsertItemsIds<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, int? executeTimeout, SqlBulkCopyOptions copyOptions, DbTransaction transaction, IDbSet<T> dbSet)
+			where T : class
+		{
+			//Create temp table
+			var tempTableName = "temp_" + tableName + "_" + DateTime.Now.Ticks;
+			var columns = properties.Select(c => "[" + c.NameInDatabase + "] " + c.DataType);
+			var selectColumns = properties.Where(x => !x.IsPrimaryKey).Select(c => "[" + c.NameInDatabase + "] ").ToList();
+			var createTmpTableCommand = $"CREATE TABLE {schema}.[{tempTableName}]({string.Join(", ", columns)})";
+
+			var sqlConnection = storeConnection as SqlConnection;
+			var sqlTransaction = transaction as SqlTransaction;
+			if (sqlConnection.State != System.Data.ConnectionState.Open)
+			{
+				sqlConnection.Open();
+			}
+
+			var mergeCommand =
+			   $@"INSERT INTO [{tableName}] ({string.Join(", ", selectColumns)})
+                OUTPUT INSERTED.*
+                SELECT {string.Join(", ", selectColumns)} FROM [{tempTableName}] TEMP";
+
+			using var createCommand = new SqlCommand(createTmpTableCommand, sqlConnection, sqlTransaction);
+			using var dCommand = new SqlCommand($"DROP table {schema}.[{tempTableName}]", sqlConnection, sqlTransaction);
+
+			createCommand.ExecuteNonQuery();
+			InsertItems(items, schema, tempTableName, properties, storeConnection, batchSize, executeTimeout, copyOptions, transaction);
+			var results = new List<T>();
+			try
+			{
+				results = ((DbSet<T>)dbSet).SqlQuery(mergeCommand).ToList();
+				//results = dbContext.Database.SqlQuery<T>(mergeCommand).ToList();
+			}
+			catch (Exception ex)
+			{
+				Configuration.Log("error");
+			}
+			finally
+			{
+				dCommand.ExecuteNonQuery();
+			}
+
+			return results;
+		}
+
 
 		public void UpdateItems<T>(IEnumerable<T> items, string schema, string tableName, IList<ColumnMapping> properties, DbConnection storeConnection, int? batchSize, UpdateSpecification<T> updateSpecification, int? executeTimeout, SqlBulkCopyOptions copyOptions, DbTransaction transaction, DbConnection insertConnection)
 		{

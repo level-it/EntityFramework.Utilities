@@ -1,4 +1,9 @@
-﻿using System;
+﻿// Copyright © 2009-2022 Level IT
+// All rights reserved as Copyright owner.
+//
+// You may not use this file unless explicitly stated by Level IT.
+
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.Entity;
@@ -21,6 +26,16 @@ namespace EntityFramework.Utilities
 		/// <param name="connection">The DbConnection to use for the insert. Only needed when for example a profiler wraps the connection. Then you need to provide a connection of the type the provider use.</param>
 		/// <param name="batchSize">The size of each batch. Default depends on the provider. SqlProvider uses 15000 as default</param>
 		void InsertAll<TEntity>(IEnumerable<TEntity> items, DbConnection connection = null, int? batchSize = null, int? executeTimeout = null, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, DbTransaction transaction = null) where TEntity : class, T;
+
+		/// <summary>
+		/// Bulk insert all items if the Provider supports it and returns the inserted items. Otherwise it will use the default insert unless Configuration.DisableDefaultFallback is set to true in which case it would throw an exception.
+		/// </summary>
+		/// <param name="items">The items to insert</param>
+		/// <param name="connection">The DbConnection to use for the insert. Only needed when for example a profiler wraps the connection. Then you need to provide a connection of the type the provider use.</param>
+		/// <param name="batchSize">The size of each batch. Default depends on the provider. SqlProvider uses 15000 as default</param>
+		IEnumerable<TEntity> InsertAllIds<TEntity>(IEnumerable<TEntity> items, DbConnection connection = null, int? batchSize = null, int? executeTimeout = null, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, DbTransaction transaction = null) where TEntity : class, T;
+
+
 		IEFBatchOperationFiltered<T> Where(Expression<Func<T, bool>> predicate);
 
 		/// <summary>
@@ -74,6 +89,7 @@ namespace EntityFramework.Utilities
 	{
 		private readonly ObjectContext _context;
 		private readonly DbContext _dbContext;
+		private readonly IDbSet<T> _dbSet;
 		private Expression<Func<T, bool>> _predicate;
 		private string _deleteTopExpression;
 
@@ -82,12 +98,16 @@ namespace EntityFramework.Utilities
 			_dbContext = context;
 			_context = (context as IObjectContextAdapter).ObjectContext;
 		}
+		private EFBatchOperation(TContext context, IDbSet<T> dbSet) : this(context)
+		{
+			_dbSet = dbSet;
+		}
 
-		public static IEFBatchOperationBase<T> For<TContext, T>(TContext context, IDbSet<T> set)
+		public static IEFBatchOperationBase<T> For<TContext, T>(TContext context, IDbSet<T> dbSet)
 			where TContext : DbContext
 			where T : class
 		{
-			return new EFBatchOperation<TContext, T>(context);
+			return new EFBatchOperation<TContext, T>(context, dbSet);
 		}
 
 		/// <summary>
@@ -136,6 +156,55 @@ namespace EntityFramework.Utilities
 
 			Configuration.Log("Found provider: " + (provider?.GetType().Name ?? "[]") + " for " + connectionToUse.GetType().Name);
 			Fallbacks.DefaultInsertAll(_context, items);
+		}
+
+		/// <summary>
+		/// Bulk insert all items if the Provider supports it. Otherwise it will use the default insert unless Configuration.DisableDefaultFallback is set to true in which case it would throw an exception.
+		/// </summary>
+		/// <param name="items">The items to insert</param>
+		/// <param name="connection">The DbConnection to use for the insert. Only needed when for example a profiler wraps the connection. Then you need to provide a connection of the type the provider use.</param>
+		/// <param name="batchSize">The size of each batch. Default depends on the provider. SqlProvider uses 15000 as default</param>
+		public IEnumerable<TEntity> InsertAllIds<TEntity>(IEnumerable<TEntity> items, DbConnection connection = null, int? batchSize = null, int? executeTimeout = null, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, DbTransaction transaction = null)
+			where TEntity : class, T
+		{
+			var con = _context.Connection as EntityConnection;
+			if (con == null && connection == null)
+			{
+				Configuration.Log("No provider could be found because the Connection didn't implement System.Data.EntityClient.EntityConnection");
+				Fallbacks.DefaultInsertAll(_context, items);
+				return Enumerable.Empty<TEntity>();
+			}
+
+			var connectionToUse = connection ?? con.StoreConnection;
+			var currentType = typeof(TEntity);
+			var provider = Configuration.Providers.FirstOrDefault(p => p.CanHandle(connectionToUse));
+
+			if (provider != null && provider.CanInsert)
+			{
+				var mapping = EfMappingFactory.GetMappingsForContext(_dbContext);
+				var typeMapping = mapping.TypeMappings[typeof(T)];
+				var tableMapping = typeMapping.TableMappings.First();
+
+				var properties = tableMapping.PropertyMappings
+					.Where(p => currentType.IsSubclassOf(p.ForEntityType) || p.ForEntityType == currentType)
+					.Where(p => p.IsComputed == false)
+					.Select(p => new ColumnMapping { NameInDatabase = p.ColumnName, NameOnObject = p.PropertyName, DataType = p.DataType, IsPrimaryKey = p.IsPrimaryKey }).ToList();
+
+				if (tableMapping.TphConfiguration != null)
+				{
+					properties.Add(new ColumnMapping
+					{
+						NameInDatabase = tableMapping.TphConfiguration.ColumnName,
+						StaticValue = tableMapping.TphConfiguration.Mappings[typeof(TEntity)]
+					});
+				}
+
+				return provider.InsertItemsIds(items, tableMapping.Schema, tableMapping.TableName, properties, connectionToUse, batchSize, executeTimeout, copyOptions, transaction, _dbSet).Select(x => (TEntity)x);
+			}
+
+			Configuration.Log("Found provider: " + (provider?.GetType().Name ?? "[]") + " for " + connectionToUse.GetType().Name);
+			Fallbacks.DefaultInsertAll(_context, items);
+			return null;
 		}
 
 		public void UpdateAll<TEntity>(IEnumerable<TEntity> items, Action<UpdateSpecification<TEntity>> updateSpecification, DbConnection connection = null, int? batchSize = null, int? executeTimeout = null, SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default, DbTransaction transaction = null) where TEntity : class, T
